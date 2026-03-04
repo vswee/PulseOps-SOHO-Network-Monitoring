@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Debug - PulseOps</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+    .error { color: #ff6b6b; }
+    .success { color: #51cf66; }
+    .info { color: #74c0fc; }
+    .section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>PulseOps Debug Console</h1>
+  
+  <div class="section">
+    <h2>Module Loading Test</h2>
+    <div id="module-test">Testing...</div>
+  </div>
+  
+  <div class="section">
+    <h2>Tab System Test</h2>
+    <div id="tab-test">Testing...</div>
+  </div>
+  
+  <div class="section">
+    <h2>Console Errors</h2>
+    <div id="console-errors">Monitoring...</div>
+  </div>
+  
+  <div class="section">
+    <h2>Page Links</h2>
+    <a href="/overview.html" style="color: #74c0fc; margin-right: 10px;">Overview</a>
+    <a href="/map.html" style="color: #74c0fc; margin-right: 10px;">Map</a>
+    <a href="/logs.html" style="color: #74c0fc; margin-right: 10px;">Logs</a>
+    <a href="/devices.html" style="color: #74c0fc; margin-right: 10px;">Devices</a>
+    <a href="/keys.html" style="color: #74c0fc; margin-right: 10px;">Keys</a>
+    <a href="/settings.html" style="color: #74c0fc; margin-right: 10px;">Settings</a>
+    <a href="/insights.html" style="color: #74c0fc; margin-right: 10px;">Insights</a>
+  </div>
+
+  <script>
+    // Capture console errors and logs
+    const originalError = console.error;
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const errors = [];
+    const logs = [];
+
+    console.error = function(...args) {
+      errors.push('ERROR: ' + args.join(' '));
+      originalError.apply(console, args);
+      updateErrorDisplay();
+    };
+
+    console.warn = function(...args) {
+      errors.push('WARN: ' + args.join(' '));
+      originalWarn.apply(console, args);
+      updateErrorDisplay();
+    };
+
+    console.log = function(...args) {
+      logs.push('LOG: ' + args.join(' '));
+      originalLog.apply(console, args);
+      updateErrorDisplay();
+    };
+
+    function updateErrorDisplay() {
+      const errorDiv = document.getElementById('console-errors');
+      const allMessages = [...errors, ...logs];
+      if (allMessages.length === 0) {
+        errorDiv.innerHTML = '<span class="success">No errors or logs detected</span>';
+      } else {
+        errorDiv.innerHTML = allMessages.map(msg => {
+          const isError = msg.startsWith('ERROR') || msg.startsWith('WARN');
+          const className = isError ? 'error' : 'info';
+          return `<div class="${className}">${msg}</div>`;
+        }).join('');
+      }
+    }
+    
+    // Test module loading
+    async function testModules() {
+      const moduleDiv = document.getElementById('module-test');
+      const tests = [];
+
+      try {
+        console.log('Testing shared module...');
+        // Test shared module
+        const shared = await import('/js/dashboard/shared.js');
+        tests.push(`<span class="success">✓ Shared module loaded</span>`);
+        console.log('Shared module:', shared);
+
+        console.log('Testing overview module...');
+        // Test overview module
+        const overview = await import('/js/dashboard/views/overview.js');
+        tests.push(`<span class="success">✓ Overview module loaded</span>`);
+        console.log('Overview module:', overview);
+
+        // Test if devices store is working
+        if (shared.default && shared.default.stores && shared.default.stores.devices) {
+          console.log('Testing devices store...');
+          const devices = await shared.default.stores.devices.load();
+          tests.push(`<span class="success">✓ Devices store working</span>`);
+          console.log('Devices loaded:', devices);
+        } else {
+          tests.push(`<span class="error">✗ Devices store not found</span>`);
+        }
+
+      } catch (error) {
+        tests.push(`<span class="error">✗ Module loading failed: ${error.message}</span>`);
+        console.error('Module test error:', error);
+      }
+
+      moduleDiv.innerHTML = tests.join('<br>');
+    }
+    
+    // Test tab system
+    function testTabSystem() {
+      const tabDiv = document.getElementById('tab-test');
+      const tests = [];
+      
+      // Check if TabsModule exists
+      if (typeof window.TabsModule !== 'undefined') {
+        tests.push(`<span class="success">✓ TabsModule available</span>`);
+        
+        // Test active tab detection
+        try {
+          const activeTab = window.TabsModule.getActiveTab();
+          tests.push(`<span class="info">Active tab: ${activeTab}</span>`);
+        } catch (error) {
+          tests.push(`<span class="error">✗ Active tab detection failed: ${error.message}</span>`);
+        }
+      } else {
+        tests.push(`<span class="error">✗ TabsModule not found</span>`);
+      }
+      
+      tabDiv.innerHTML = tests.join('<br>');
+    }
+    
+    // Load tabs.js and run tests
+    const script = document.createElement('script');
+    script.src = '/js/tabs.js';
+    script.onload = function() {
+      setTimeout(testTabSystem, 100);
+    };
+    script.onerror = function() {
+      document.getElementById('tab-test').innerHTML = '<span class="error">✗ Failed to load tabs.js</span>';
+    };
+    document.head.appendChild(script);
+    
+    // Run module tests
+    testModules();
+    
+    // Initial error display
+    updateErrorDisplay();
+  </script>
+</body>
+</html>

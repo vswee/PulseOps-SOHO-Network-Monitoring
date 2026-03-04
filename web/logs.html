@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Activity Logs</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="logs">
+  <div data-page-content hidden>
+    <section id="view-logs" class="view-section hidden" data-view-section>
+            <div class="panel">
+              <form id="logs-filter-form" class="logs-filters" autocomplete="off">
+                <div class="settings-field">
+                  <label for="logs-source">Source</label>
+                  <select id="logs-source">
+                    <option value="all">All sources</option>
+                    <option value="device">Devices</option>
+                    <option value="system">PulseOps</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="logs-device-kind">Device type</label>
+                  <select id="logs-device-kind">
+                    <option value="">All types</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="logs-device-id">Device</label>
+                  <select id="logs-device-id">
+                    <option value="">All devices</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="logs-level">Log level</label>
+                  <select id="logs-level">
+                    <option value="">All levels</option>
+                    <option value="info">Info</option>
+                    <option value="warn">Warn</option>
+                    <option value="error">Error</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="logs-ip-range">Device IP range</label>
+                  <input type="text" id="logs-ip-range" placeholder="192.168.1.0/24 or 10.0.0.*" />
+                </div>
+                <div class="settings-field">
+                  <label for="logs-search">Search</label>
+                  <input type="text" id="logs-search" placeholder="Message, device or level" />
+                </div>
+                <div class="settings-field">
+                  <label>&nbsp;</label>
+                  <div class="form-inline">
+                    <button type="submit" class="btn btn-primary">Apply filters</button>
+                    <button type="button" class="btn btn-secondary" id="logs-reset">Reset</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div id="logs-status" class="muted"></div>
+            <div id="logs-results" class="logs-list"></div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/logs.js"></script>
+</body>
+</html>

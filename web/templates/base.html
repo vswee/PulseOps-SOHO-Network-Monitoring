@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{PAGE_TITLE}} - PulseOps</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/tabs.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="/js/theme-manager.js"></script>
+  {{ADDITIONAL_HEAD}}
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header-top">
+        <div>
+          <h1>PulseOps</h1>
+          <p class="muted">Monitoring &amp; orchestration for your network estate.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/wizard.html" class="link-unstyled">
+            <button class="btn btn-primary" type="button">➕ Add Device</button>
+          </a>
+          <div class="menu-wrapper">
+            <button type="button" class="menu-trigger" id="user-menu-trigger" aria-label="User menu">
+              👤 <span id="username-display">Admin</span>
+            </button>
+            <div class="menu-list hidden" id="user-menu">
+              <button type="button" class="menu-item" id="logout-btn">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="nav-tabs" role="tablist" id="main-nav-tabs">
+        <a href="/overview.html" class="nav-tab" data-view="overview">Overview</a>
+        <a href="/logs.html" class="nav-tab" data-view="logs">Activity Logs</a>
+        <a href="/devices.html" class="nav-tab" data-view="devices">Devices</a>
+        <a href="/keys.html" class="nav-tab" data-view="keys">SSH Keys</a>
+        <a href="/settings.html" class="nav-tab" data-view="settings">Settings</a>
+        <a href="/insights.html" class="nav-tab" data-view="insights">Device Insights</a>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      {{MAIN_CONTENT}}
+    </main>
+  </div>
+
+  <!-- Common modals and overlays -->
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+    aria-labelledby="confirm-modal-title">
+    <div class="modal">
+      <h2 id="confirm-modal-title">Confirm action</h2>
+      <p id="confirm-modal-message">Are you sure?</p>
+      <div class="modal-actions" id="confirm-modal-actions">
+        <div class="modal-actions-extra" id="confirm-modal-extra"></div>
+        <div class="modal-actions-main">
+          <button type="button" id="confirm-modal-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirm-modal-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  {{ADDITIONAL_MODALS}}
+
+  <!-- Common JavaScript -->
+  <script src="/js/shared/auth.js"></script>
+  <script src="/js/shared/utils.js"></script>
+  <script src="/js/tabs.js"></script>
+  {{ADDITIONAL_SCRIPTS}}
+</body>
+
+</html>

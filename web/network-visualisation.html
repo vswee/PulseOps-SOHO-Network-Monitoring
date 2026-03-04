@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Network Visualisation</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body data-page="dashboard" data-route="network-visualisation">
+  <div data-page-content hidden>
+    <section id="view-network-visualisation" class="view-section hidden" data-view-section>
+      <div class="panel network-visualisation-panel">
+        <header class="network-visualisation-header">
+          <div>
+            <h2>Network Visualisation</h2>
+            <p class="muted">Explore the live topology around this PulseOps instance with bandwidth and latency context on every link.</p>
+          </div>
+          <div class="network-visualisation-actions">
+            <button type="button" class="btn btn-outline" id="network-visualisation-refresh">Refresh data</button>
+            <span id="network-visualisation-status" class="network-visualisation-status muted" role="status"></span>
+          </div>
+        </header>
+
+        <div class="network-visualisation-body">
+          <div class="network-visualiser-wrapper">
+            <div class="network-visualiser" id="network-visualiser" aria-live="polite">
+              <svg class="network-visualiser-links" id="network-visualiser-links" aria-hidden="true"></svg>
+              <div class="network-visualiser-link-labels" id="network-visualiser-link-labels" aria-hidden="true"></div>
+              <div class="network-visualiser-nodes" id="network-visualiser-nodes"></div>
+              <div class="network-visualiser-empty hidden" id="network-visualiser-empty">
+                <p>No devices available yet. Add devices or pull telemetry to draw the network.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="network-visualisation-sidepanel">
+            <div class="network-visualisation-insight" id="network-visualisation-insight">
+              <h3>Selected device</h3>
+              <p class="muted">Select a device to see current telemetry and jump into full insights.</p>
+              <dl class="network-visualisation-insight-grid" id="network-visualisation-insight-grid"></dl>
+              <div class="network-visualisation-insight-actions hidden" id="network-visualisation-insight-actions">
+                <button type="button" class="btn btn-primary" id="network-visualisation-open-insights">View full insights</button>
+              </div>
+            </div>
+            <div class="network-visualisation-legends">
+              <div>
+                <h4>Device types</h4>
+                <ul class="network-visualisation-legend" id="network-visualisation-type-legend"></ul>
+              </div>
+              <div>
+                <h4>Locations</h4>
+                <ul class="network-visualisation-legend" id="network-visualisation-location-legend"></ul>
+              </div>
+              <div>
+                <h4>Link health</h4>
+                <ul class="network-visualisation-legend" id="network-visualisation-link-legend"></ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/device-status.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/network-visualisation.js"></script>
+</body>
+</html>

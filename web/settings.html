@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Settings</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="settings">
+  <div data-page-content hidden>
+    <section id="view-settings" class="view-section hidden" data-view-section>
+            <form id="settings-form" class="settings-form" autocomplete="off">
+              <div class="settings-group">
+                <h3>Appearance &amp; account</h3>
+                <div class="settings-row">
+                  <div class="settings-field">
+                    <label for="settings-theme">Theme</label>
+                    <select id="settings-theme">
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="retro">Retro Terminal</option>
+                      <option value="sophisticated">Sophisticated Blue</option>
+                      <option value="system">Match system</option>
+                    </select>
+                    <div class="settings-note">Choose your preferred visual theme. System will follow your browser's
+                      preference.</div>
+                  </div>
+                  <div class="settings-field">
+                    <label for="settings-account-name">Account name</label>
+                    <input type="text" id="settings-account-name" placeholder="Network operations" />
+                  </div>
+                  <div class="settings-field">
+                    <label for="settings-account-email">Account email</label>
+                    <input type="email" id="settings-account-email" placeholder="alerts@example.com" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-group">
+                <h3>Notifications</h3>
+                <div class="settings-field">
+                  <label><input type="checkbox" id="settings-email-enabled" /> Enable email notifications</label>
+                  <div class="settings-note">PulseOps will use the SMTP details below for alerts.</div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-field">
+                    <label for="settings-email-host">SMTP host</label>
+                    <input type="text" id="settings-email-host" placeholder="smtp.example.com" />
+                  </div>
+                  <div class="settings-field">
+                    <label for="settings-email-port">SMTP port</label>
+                    <input type="number" id="settings-email-port" min="1" max="65535" placeholder="587" />
+                  </div>
+                  <div class="settings-field">
+                    <label for="settings-email-username">SMTP username</label>
+                    <input type="text" id="settings-email-username" placeholder="ops@example.com" />
+                  </div>
+                  <div class="settings-field">
+                    <label for="settings-email-password">SMTP password</label>
+                    <input type="password" id="settings-email-password" placeholder="Leave blank to keep current" />
+                    <label class="settings-note"><input type="checkbox" id="settings-email-clear" /> Clear saved
+                      password</label>
+                    <div class="settings-note" id="settings-email-password-note"></div>
+                  </div>
+                </div>
+                <div class="settings-field">
+                  <label><input type="checkbox" id="settings-web-enabled" /> Enable browser notifications</label>
+                  <div class="settings-note">Requires acceptance in the browser when prompted.</div>
+                </div>
+              </div>
+
+              <div class="settings-actions">
+                <button type="submit" class="btn btn-primary" id="settings-save">Save settings</button>
+                <span id="settings-status" class="muted"></span>
+              </div>
+            </form>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/settings.js"></script>
+</body>
+</html>

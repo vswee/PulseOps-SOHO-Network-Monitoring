@@ -1,0 +1,25 @@
+services:
+  pulseops:
+    build: .
+    image: ghcr.io/pulseops/pulseops:dev
+    container_name: pulseops
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    cap_add:
+      - NET_RAW
+    environment:
+      - PULSEOPS_KEY_SECRET=b_gTQmYaFDAWZZOOf1zgEeZvh_ssceStTL_cfARdzJydATj8sR97b-ENT3DQ20gh
+    volumes:
+      - ./config.sample.yml:/etc/pulseops/config.yml:ro
+      - pulseops-data:/var/lib/pulseops
+  iperf3:
+    image: networkstatic/iperf3:latest
+    container_name: pulseops-iperf3
+    command: -s
+    restart: unless-stopped
+    ports:
+      - "5201:5201/tcp"
+      - "5201:5201/udp"
+volumes:
+  pulseops-data: {}

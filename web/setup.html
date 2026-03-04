@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps Setup</title>
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body class="auth-page" data-page="setup">
+  <div class="setup-container auth-card">
+    <div class="setup-logo">PulseOps</div>
+    <div class="setup-subtitle">Welcome! Let's set up your admin account.</div>
+    
+    <div class="setup-info">
+      <h3>🔐 Admin Account Setup</h3>
+      <p>Create your administrator account to get started with PulseOps. All users on this instance will have admin capabilities.</p>
+    </div>
+
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+
+    <form id="setup-form" class="setup-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="username" />
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email (optional)</label>
+        <input type="email" id="email" name="email" autocomplete="email" />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="new-password" minlength="6" />
+      </div>
+      
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password" required autocomplete="new-password" minlength="6" />
+      </div>
+      
+      <button type="submit" class="setup-button" id="setup-button">
+        Create Admin Account
+      </button>
+    </form>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <span>Setting up your account...</span>
+    </div>
+  </div>
+  <script src="/js/setup.js"></script>
+</body>
+</html>

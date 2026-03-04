@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — SSH Keys</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="keys">
+  <div data-page-content hidden>
+    <section id="view-keys" class="view-section hidden" data-view-section>
+            <div class="keys-toolbar">
+              <div>
+                <h2 class="section-title-tight">SSH Key Manager</h2>
+                <p class="muted">Manage SSH keys used for device authentication. Keys are stored encrypted on disk.</p>
+              </div>
+              <div class="keys-toolbar-buttons">
+                <button type="button" class="btn btn-primary" id="keys-add-btn">➕ Add New Key</button>
+                <button type="button" class="btn btn-secondary" id="keys-refresh-btn">🔄 Refresh</button>
+              </div>
+            </div>
+            <div id="keys-content">
+              <div id="keys-loading" class="empty-state">Loading SSH keys...</div>
+              <div id="keys-empty" class="empty-state hidden">No SSH keys configured yet. Add one to get started.</div>
+              <div id="keys-list" class="keys-grid hidden"></div>
+            </div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/keys.js"></script>
+</body>
+</html>

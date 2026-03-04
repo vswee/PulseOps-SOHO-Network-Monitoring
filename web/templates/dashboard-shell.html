@@ -1,0 +1,216 @@
+<div class="global-loading" id="global-loading" role="status" aria-live="polite" aria-hidden="true">
+  <span class="sr-only" id="global-loading-label">Loading data...</span>
+  <div class="global-loading-track">
+    <div class="global-loading-bar" id="global-loading-bar"></div>
+  </div>
+</div>
+<div class="app-shell">
+    <header class="app-header">
+      <div class="app-header-top">
+        <div>
+          <h1>PulseOps</h1>
+          <p class="muted">Monitoring &amp; orchestration for your network estate.</p>
+        </div>
+        <div class="header-actions">
+          <a href="/wizard.html" class="link-unstyled">
+            <button class="btn btn-primary" type="button">➕ Add Device</button>
+          </a>
+          <div class="menu-wrapper">
+            <button type="button" class="menu-trigger" id="user-menu-trigger" aria-label="User menu">
+              👤 <span id="username-display">Admin</span>
+            </button>
+            <div class="menu-list hidden" id="user-menu">
+              <button type="button" class="menu-item" id="logout-btn">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav class="nav-tabs" role="tablist">
+        <a class="nav-tab" role="tab" data-route="overview" data-view="overview" href="/">Overview</a>
+        <a class="nav-tab" role="tab" data-route="network-visualisation" data-view="network-visualisation" href="/network-visualisation.html">Network Visualisation</a>
+        <a class="nav-tab" role="tab" data-route="network-analysis" data-view="network-analysis" href="/network-analysis.html">Network Analysis</a>
+        <a class="nav-tab" role="tab" data-route="logs" data-view="logs" href="/logs.html">Activity Logs</a>
+        <a class="nav-tab" role="tab" data-route="devices" data-view="devices" href="/devices.html">Devices</a>
+        <a class="nav-tab" role="tab" data-route="keys" data-view="keys" href="/keys.html">SSH Keys</a>
+        <a class="nav-tab" role="tab" data-route="settings" data-view="settings" href="/settings.html">Settings</a>
+        <a class="nav-tab" role="tab" data-route="insights" data-view="insights" href="/insights.html">Device Insights</a>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      {{PAGE_CONTENT}}
+    </main>
+  </div>
+
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+    aria-labelledby="confirm-modal-title">
+    <div class="modal">
+      <h2 id="confirm-modal-title">Confirm action</h2>
+      <p id="confirm-modal-message">Are you sure?</p>
+      <div class="modal-actions" id="confirm-modal-actions">
+        <div class="modal-actions-extra" id="confirm-modal-extra"></div>
+        <div class="modal-actions-main">
+          <button type="button" id="confirm-modal-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirm-modal-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="edit-device-overlay" class="drawer-backdrop" role="dialog" aria-modal="true"
+    aria-labelledby="edit-device-title">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div>
+          <h2 class="drawer-title" id="edit-device-title">Edit Device</h2>
+          <p class="muted" id="edit-device-subtitle">Adjust configuration and validate before saving.</p>
+        </div>
+        <button type="button" class="drawer-close" id="edit-close-btn" aria-label="Close editor">×</button>
+      </div>
+      <div class="drawer-body">
+        <div id="edit-loading-state" class="edit-loading hidden">
+          <div class="spinner"></div>
+          <p>Loading device...</p>
+        </div>
+        <div id="edit-content" class="hidden">
+          <div class="stepper">
+            <div class="stepper-item" data-edit-step="1">Configuration</div>
+            <div class="stepper-item" data-edit-step="2">Validation</div>
+          </div>
+          <div class="edit-step" id="edit-step-1">
+            <form id="edit-device-form"></form>
+          </div>
+          <div class="edit-step" id="edit-step-2">
+            <div id="edit-validation-loading" class="edit-loading hidden">
+              <div class="spinner"></div>
+              <p>Validating device...</p>
+            </div>
+            <div id="edit-validation-results" class="validation-results hidden"></div>
+            <div id="edit-summary" class="edit-summary hidden"></div>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-secondary" id="edit-back-btn">Back</button>
+        <div class="drawer-action-buttons">
+          <button type="button" class="btn btn-outline" id="edit-reprovision-btn">Reprovision Device</button>
+          <button type="button" class="btn btn-outline" id="edit-validate-btn">Validate</button>
+          <button type="button" class="btn btn-primary" id="edit-save-btn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-ssh-key-modal" class="key-modal-backdrop" role="dialog" aria-modal="true"
+    aria-labelledby="edit-ssh-key-title">
+    <div class="key-modal">
+      <header>
+        <h3 id="edit-ssh-key-title" class="drawer-heading">SSH Key Manager</h3>
+        <button type="button" class="drawer-close" id="edit-ssh-key-close" aria-label="Close SSH key manager">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="key-list" id="edit-ssh-key-list"></div>
+        <div class="drawer-section">
+          <h4 class="drawer-section-title">Add New Key</h4>
+          <div class="form-group form-group-tight">
+            <label for="edit-new-ssh-key-name">Key Name</label>
+            <input type="text" id="edit-new-ssh-key-name" placeholder="e.g., datacenter-router-key">
+          </div>
+          <div class="form-group form-group-tight">
+            <label for="edit-new-ssh-key-content">Private Key (PEM)</label>
+            <textarea id="edit-new-ssh-key-content" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"></textarea>
+          </div>
+          <div class="drawer-section-actions">
+            <button type="button" class="btn btn-primary" id="edit-save-ssh-key-btn">Save Key</button>
+            <span class="muted muted-sm">Keys are stored encrypted on disk.</span>
+          </div>
+        </div>
+        <div id="edit-ssh-key-viewer" class="key-viewer hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-key-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="add-key-title">
+    <div class="modal modal-wide">
+      <h2 id="add-key-title">Add SSH Key</h2>
+      <form id="add-key-form">
+        <div class="settings-field">
+          <label for="add-key-name">Key Name</label>
+          <input type="text" id="add-key-name" placeholder="e.g., datacenter-router-key" required>
+          <div class="settings-note">A descriptive name to identify this key</div>
+        </div>
+        <div class="settings-field">
+          <label for="add-key-content">Private Key (PEM format)</label>
+          <textarea id="add-key-content" class="mono-input" rows="8" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+            required></textarea>
+          <div class="settings-note">Paste your private key content here. Keys are stored encrypted on disk.</div>
+        </div>
+      </form>
+      <div class="modal-actions">
+        <button type="button" id="add-key-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="add-key-save">Save Key</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="backup-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+    aria-labelledby="backup-modal-title">
+    <div class="modal modal-wide">
+      <h2 id="backup-modal-title">Device backups</h2>
+      <p id="backup-modal-status" class="muted">Loading backups…</p>
+      <div id="backup-modal-list" class="backup-history-list"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="backup-modal-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="map-settings-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+    aria-labelledby="map-settings-title">
+    <div class="modal modal-wide map-settings-modal">
+      <h2 id="map-settings-title">Map Settings</h2>
+      <form id="map-settings-form" class="map-settings-form">
+        <div class="modal-body">
+          <div class="settings-row">
+            <div class="settings-field">
+              <label for="map-settings-name">Name</label>
+              <input type="text" id="map-settings-name" required placeholder="Site topology" />
+            </div>
+            <div class="settings-field">
+              <label for="map-settings-group">Group</label>
+              <select id="map-settings-group" required></select>
+            </div>
+          </div>
+          <div class="settings-field">
+            <label for="map-settings-description">Description</label>
+            <textarea id="map-settings-description" rows="3"
+              placeholder="Describe the intent of this map"></textarea>
+          </div>
+          <div class="settings-row">
+            <div class="settings-field">
+              <label for="map-settings-layout">Layout</label>
+              <select id="map-settings-layout">
+                <option value="hierarchical">Hierarchical (top-down)</option>
+                <option value="horizontal">Horizontal (left-to-right)</option>
+                <option value="dynamic">Dynamic (force-directed)</option>
+                <option value="radial">Radial (centre-out)</option>
+              </select>
+            </div>
+          </div>
+          <fieldset class="map-settings-toggles">
+            <legend class="muted">Display options</legend>
+            <label><input type="checkbox" id="map-settings-show-alerts" checked /> Show alert status</label>
+            <label><input type="checkbox" id="map-settings-all-edges" /> Display all edges</label>
+            <label><input type="checkbox" id="map-settings-show-undiscovered" /> Show undiscovered vertices</label>
+          </fieldset>
+          <div class="map-settings-status muted" id="map-settings-status"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="map-settings-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save map</button>
+        </div>
+      </form>
+    </div>
+  </div>

@@ -1,0 +1,42 @@
+iperf:
+  server: 127.0.0.1
+  seconds: 5
+  parallel: 1
+  interval_minutes: 60
+
+devices:
+  - name: core-router
+    host: 192.168.1.1
+    kind: router
+    platform: openwrt
+    user: root
+    ssh_key: /path/to/id_ed25519
+  - name: edgeos-gw
+    host: 10.0.0.1
+    kind: router
+    platform: edgeos
+    user: ubnt
+    ssh_key: /path/to/id_ed25519
+  - name: office-printer
+    host: 192.168.1.50
+    kind: printer
+    platform: generic
+    user: ""
+  - name: huawei-modem
+    host: 192.168.8.1
+    kind: modem
+    platform: huawei
+    user: admin
+    password: admin
+
+# SNMP-enabled devices can be defined via JSON imports, for example:
+# {
+#   "name": "core-switch",
+#   "host": "192.168.1.2",
+#   "kind": "switch",
+#   "meta": {
+#     "snmp_enabled": true,
+#     "snmp_community": "monitoring",
+#     "snmp_interval": "5m"
+#   }
+# }

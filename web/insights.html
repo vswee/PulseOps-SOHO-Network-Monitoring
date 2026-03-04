@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Device Insights</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="insights">
+  <div data-page-content hidden>
+    <section id="view-insights" class="view-section hidden" data-view-section>
+            <div class="panel">
+              <div class="insights-header">
+                <select id="insights-device-select">
+                  <option value="">Select a device…</option>
+                </select>
+                <button type="button" class="btn btn-secondary" id="insights-refresh" disabled>Refresh</button>
+              </div>
+              <div id="insights-empty" class="empty-state">Pick a device to inspect historical metrics and activity.</div>
+              <div id="insights-content" class="hidden">
+                <div id="insights-device-container" class="insights-device-container"></div>
+                <div class="insights-summary">
+                  <div class="insights-meta" id="insights-meta"></div>
+                </div>
+                <div class="insights-chart">
+                  <h3 class="section-subheading">Insights overview</h3>
+                  <canvas id="insights-overview-canvas"></canvas>
+                </div>
+                <div class="insights-chart" id="insights-metric-charts-section">
+                  <h3 class="section-subheading">Per-metric charts</h3>
+                  <div id="insights-metric-charts" class="insights-metric-charts"></div>
+                </div>
+                <div>
+                  <h3 class="section-subheading">Recent activity</h3>
+                  <div id="insights-logs" class="logs-list"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/device-status.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/insights.js"></script>
+</body>
+</html>

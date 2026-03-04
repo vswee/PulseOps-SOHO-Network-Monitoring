@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integration Test - Metric Hiding</title>
+    <link rel="stylesheet" href="web/css/themes.css">
+    <link rel="stylesheet" href="web/css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <h1>Integration Test - Metric Hiding</h1>
+            <p class="muted">Testing with actual application structure</p>
+        </header>
+        
+        <main class="app-main">
+            <div class="grid" id="devices">
+                <!-- Device cards will be inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Copy the exact functions from the main application
+        function el(tag, attrs={}, ...kids){
+            const e=document.createElement(tag);
+            for(const [k,v] of Object.entries(attrs)){
+                if(k==='class'){
+                    e.className=v;
+                } else if(k.startsWith('on') && typeof v === 'function'){
+                    e.addEventListener(k.slice(2).toLowerCase(), v);
+                } else {
+                    e.setAttribute(k,v);
+                }
+            }
+            kids.forEach(kid => {
+                if(typeof kid === 'string'){
+                    e.appendChild(document.createTextNode(kid));
+                } else if(kid){
+                    e.appendChild(kid);
+                }
+            });
+            return e;
+        }
+
+        const SUMMARY_METRICS = [
+            {
+                key: 'ping_ms',
+                label: 'Ping (24h avg)',
+                aggregation: 'avg',
+                lookbackHours: 24,
+                formatter: (value) => value != null ? `${value.toFixed(1)} ms` : 'n/a'
+            },
+            {
+                key: 'iperf_mbps',
+                label: 'Bandwidth (24h avg)',
+                aggregation: 'avg',
+                lookbackHours: 24,
+                formatter: (value) => value != null ? `${value.toFixed(1)} Mbps` : 'n/a'
+            },
+            {
+                key: 'cpu_usage_percent',
+                label: 'CPU Usage',
+                aggregation: 'latest',
+                formatter: (value) => value != null ? `${value.toFixed(1)}%` : 'n/a'
+            },
+            {
+                key: 'cpu_load_1m',
+                label: 'CPU Load (1m)',
+                aggregation: 'latest',
+                formatter: (value) => value != null ? value.toFixed(2) : 'n/a'
+            },
+            {
+                key: 'memory_used_percent',
+                label: 'Memory Used',
+                aggregation: 'latest',
+                formatter: (value) => value != null ? `${value.toFixed(1)}%` : 'n/a'
+            },
+            {
+                key: 'disk_used_percent',
+                label: 'Disk Used',
+                aggregation: 'latest',
+                formatter: (value) => value != null ? `${value.toFixed(1)}%` : 'n/a'
+            }
+        ];
+
+        let deviceHiddenMetricsVisible = new Map(); // deviceId -> boolean
+        let metricVisibilityState = new Map();
+
+        function createMetricsSummary(device){
+            const container = el('div',{class:'metrics-compact'});
+            SUMMARY_METRICS.forEach(def => {
+                const item = el('div',{class:'metric-compact-item', 'data-metric-key': def.key});
+                const label = el('div',{class:'metric-compact-label'}, def.label.replace(' (24h avg)', ''));
+                const valueContainer = el('div',{class:'metric-compact-value', id:`metric-${def.key}-${device.id}`}, '--');
+                item.appendChild(label);
+                item.appendChild(valueContainer);
+                container.appendChild(item);
+            });
+            
+            // Create toggle container for hidden metrics
+            const toggleContainer = el('div', {class: 'metrics-toggle-container', id: `metrics-toggle-${device.id}`, style: 'display: none;'});
+            const tooltipWrapper = el('div', {class: 'metrics-toggle-tooltip'});
+            const toggleBtn = el('button', {
+                type: 'button', 
+                class: 'metrics-toggle-btn',
+                id: `metrics-toggle-btn-${device.id}`
+            }, 'Show hidden metrics');
+            
+            const tooltipText = el('div', {class: 'tooltip-text'}, 'Metrics without data are automatically hidden');
+            tooltipWrapper.appendChild(toggleBtn);
+            tooltipWrapper.appendChild(tooltipText);
+            toggleContainer.appendChild(tooltipWrapper);
+            
+            toggleBtn.addEventListener('click', () => toggleHiddenMetrics(device.id));
+            
+            const wrapper = el('div',{class:'latest-metrics'});
+            wrapper.appendChild(container);
+            wrapper.appendChild(toggleContainer);
+            return wrapper;
+        }
+
+        function updateMetricVisibility(deviceId) {
+            const metricsContainer = document.querySelector(`#device-${deviceId} .metrics-compact`);
+            const toggleContainer = document.getElementById(`metrics-toggle-${deviceId}`);
+            const toggleBtn = document.getElementById(`metrics-toggle-btn-${deviceId}`);
+
+            if (!metricsContainer || !toggleContainer || !toggleBtn) return;
+
+            const hiddenMetrics = new Set();
+            const isDeviceHiddenVisible = deviceHiddenMetricsVisible.get(deviceId) || false;
+
+            // Check each metric to see if it only shows "n/a"
+            SUMMARY_METRICS.forEach(def => {
+                const cell = document.getElementById(`metric-${def.key}-${deviceId}`);
+                const metricItem = metricsContainer.querySelector(`[data-metric-key="${def.key}"]`);
+
+                if (cell && metricItem) {
+                    const isNa = cell.textContent.trim() === 'n/a' || cell.textContent.trim() === '--';
+
+                    if (isNa) {
+                        hiddenMetrics.add(def.key);
+                        // Hide/show based on this device's toggle state
+                        if (isDeviceHiddenVisible) {
+                            metricItem.classList.remove('metric-hidden');
+                        } else {
+                            metricItem.classList.add('metric-hidden');
+                        }
+                    } else {
+                        metricItem.classList.remove('metric-hidden');
+                    }
+                }
+            });
+
+            // Store the hidden metrics for this device
+            metricVisibilityState.set(deviceId, hiddenMetrics);
+
+            // Show/hide the toggle button
+            if (hiddenMetrics.size > 0) {
+                toggleContainer.style.display = 'block';
+                if (isDeviceHiddenVisible) {
+                    toggleBtn.textContent = 'Hide metrics without data';
+                } else {
+                    const hiddenCount = hiddenMetrics.size;
+                    toggleBtn.textContent = `Show ${hiddenCount} hidden metric${hiddenCount > 1 ? 's' : ''}`;
+                }
+            } else {
+                toggleContainer.style.display = 'none';
+            }
+        }
+
+        function toggleHiddenMetrics(deviceId) {
+            // Toggle the visibility state for this specific device
+            const currentState = deviceHiddenMetricsVisible.get(deviceId) || false;
+            deviceHiddenMetricsVisible.set(deviceId, !currentState);
+
+            // Update only this device
+            updateMetricVisibility(deviceId);
+        }
+
+        function deviceCard(d){
+            const nameLabel = el('strong',{class:'device-name'}, d.name || 'Unnamed device');
+            const titleRow = el('div',{class:'device-title-row'}, nameLabel);
+            const subtitleText = `${d.kind || 'Unknown'} / ${d.platform || 'Unknown'}`;
+            const headerInfo = el('div',{class:'device-header-info'},
+                titleRow,
+                el('div',{class:'muted device-subtitle'}, subtitleText)
+            );
+
+            const latest = createMetricsSummary(d);
+            const status = el('div',{class:'muted', id:`status-${d.id}`});
+
+            const card = el('div',{class:'card', id:`device-${d.id}`},
+                el('div',{class:'row device-header'}, headerInfo),
+                el('div',{class:'mono'}, d.host),
+                el('div',{style:'height:.4rem'}),
+                latest,
+                status
+            );
+
+            return card;
+        }
+
+        // Test data
+        const testDevices = [
+            {
+                id: 1,
+                name: 'Router with Mixed Data',
+                host: '192.168.1.1',
+                kind: 'router',
+                platform: 'openwrt',
+                metrics: {
+                    ping_ms: 15.2,
+                    iperf_mbps: 950.5,
+                    cpu_usage_percent: null, // This will show as n/a
+                    cpu_load_1m: null, // This will show as n/a
+                    memory_used_percent: 45.2,
+                    disk_used_percent: null // This will show as n/a
+                }
+            },
+            {
+                id: 2,
+                name: 'Device with No Data',
+                host: '192.168.1.2',
+                kind: 'server',
+                platform: 'generic',
+                metrics: {
+                    ping_ms: null,
+                    iperf_mbps: null,
+                    cpu_usage_percent: null,
+                    cpu_load_1m: null,
+                    memory_used_percent: null,
+                    disk_used_percent: null
+                }
+            },
+            {
+                id: 3,
+                name: 'Fully Monitored Device',
+                host: '192.168.1.3',
+                kind: 'switch',
+                platform: 'openwrt',
+                metrics: {
+                    ping_ms: 8.5,
+                    iperf_mbps: 1000.0,
+                    cpu_usage_percent: 25.8,
+                    cpu_load_1m: 0.45,
+                    memory_used_percent: 67.2,
+                    disk_used_percent: 78.3
+                }
+            }
+        ];
+
+        // Simulate metric loading
+        function simulateMetricLoading(device) {
+            SUMMARY_METRICS.forEach(def => {
+                const cell = document.getElementById(`metric-${def.key}-${device.id}`);
+                if (cell) {
+                    const value = device.metrics[def.key];
+                    const formattedValue = def.formatter(value);
+                    cell.textContent = formattedValue;
+                }
+            });
+            
+            // Update visibility after metrics are loaded
+            setTimeout(() => updateMetricVisibility(device.id), 50);
+        }
+
+        // Initialize the test
+        function initTest() {
+            const grid = document.getElementById('devices');
+            
+            testDevices.forEach(device => {
+                const card = deviceCard(device);
+                grid.appendChild(card);
+                
+                // Simulate metric loading after a short delay
+                setTimeout(() => simulateMetricLoading(device), 100);
+            });
+        }
+
+        // Start the test when page loads
+        document.addEventListener('DOMContentLoaded', initTest);
+    </script>
+</body>
+</html>

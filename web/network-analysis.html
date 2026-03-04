@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Network Analysis</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="network-analysis">
+  <div data-page-content hidden>
+    <section id="view-network-analysis" class="view-section hidden" data-view-section>
+      <div class="panel network-analysis-intro">
+        <div>
+          <h2>Network Analysis</h2>
+          <p class="muted">Detect local networks, run discovery scans, and classify devices as local or remote.</p>
+        </div>
+        <div class="network-analysis-actions">
+          <button type="button" class="btn btn-outline" id="network-analysis-refresh-ranges">Refresh ranges</button>
+          <label class="network-analysis-option">
+            <input type="checkbox" id="network-analysis-port-scan" /> Include common port scan
+          </label>
+          <button type="button" class="btn btn-primary" id="network-analysis-run">Scan selected networks</button>
+        </div>
+        <div class="network-analysis-status" id="network-analysis-status" role="status"></div>
+      </div>
+
+      <div class="panel network-analysis-ranges" id="network-analysis-ranges-panel">
+        <h3>Networks &amp; VLANs</h3>
+        <p class="muted">Detected interfaces appear automatically. Add manual entries to persist additional networks or VLANs for scanning.</p>
+
+        <div class="network-analysis-manual" id="network-analysis-manual">
+          <h4>Add Manual Network or VLAN</h4>
+          <form class="network-analysis-manual-form" id="network-analysis-manual-form">
+            <label class="manual-field">
+              <span>Label</span>
+              <input type="text" id="network-analysis-manual-label" name="label" placeholder="Guest VLAN" required />
+            </label>
+            <label class="manual-field">
+              <span>Type</span>
+              <select id="network-analysis-manual-kind" name="kind">
+                <option value="network">Network</option>
+                <option value="vlan">VLAN</option>
+              </select>
+            </label>
+            <label class="manual-field">
+              <span>Primary link</span>
+              <select id="network-analysis-manual-medium" name="medium">
+                <option value="wired">Wired (LAN)</option>
+                <option value="wireless">Wireless (Wi-Fi)</option>
+              </select>
+            </label>
+            <label class="manual-field">
+              <span>Network (CIDR)</span>
+              <input type="text" id="network-analysis-manual-network" name="network" placeholder="192.168.50.0/24" required />
+            </label>
+            <label class="manual-field">
+              <span>Ping host (optional)</span>
+              <input type="text" id="network-analysis-manual-ping" name="ping_host" placeholder="192.168.50.1" />
+            </label>
+            <div class="manual-actions">
+              <button type="submit" class="btn btn-inline" id="network-analysis-manual-submit">Add</button>
+            </div>
+          </form>
+          <p class="muted small">Start and end addresses are derived from the network. The ping host defaults to the first address if left blank.</p>
+        </div>
+
+        <div id="network-analysis-range-list" class="network-analysis-range-list"></div>
+      </div>
+
+      <div class="panel network-analysis-summary hidden" id="network-analysis-summary">
+        <h3>Scan Summary</h3>
+        <div class="network-analysis-summary-grid">
+          <div><strong>Total devices</strong><span id="network-analysis-total">0</span></div>
+          <div><strong>Local (LAN)</strong><span id="network-analysis-lan">0</span></div>
+          <div><strong>Local VLAN</strong><span id="network-analysis-vlan">0</span></div>
+          <div><strong>Remote</strong><span id="network-analysis-remote">0</span></div>
+          <div><strong>Average latency</strong><span id="network-analysis-latency">—</span></div>
+          <div><strong>Last scan</strong><span id="network-analysis-timestamp">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel network-analysis-results hidden" id="network-analysis-results">
+        <div class="table-responsive">
+          <table class="network-analysis-table">
+            <thead>
+              <tr>
+                <th>IP Address</th>
+                <th>Hostname</th>
+                <th>Location</th>
+                <th>Latency (ms)</th>
+                <th>Open Ports</th>
+                <th>Source Range</th>
+              </tr>
+            </thead>
+            <tbody id="network-analysis-results-body">
+              <tr>
+                <td colspan="6" class="muted">Run a network scan to see discovered devices.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/network-analysis.js"></script>
+</body>
+</html>

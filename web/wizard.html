@@ -1,0 +1,1640 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Device Wizard - PulseOps</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/wizard.css" />
+  </head>
+<body data-page="wizard">
+  <div class="container">
+    <div class="header">
+      <div class="breadcrumb-nav">
+        <a href="/index.html" class="breadcrumb-link">
+          <span class="breadcrumb-icon">←</span>
+          <span>Dashboard</span>
+        </a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">Device Setup Wizard</span>
+      </div>
+
+      <div class="header-content">
+        <h1>Device Setup Wizard</h1>
+        <p>Add a new device to PulseOps monitoring</p>
+      </div>
+
+      <div class="step-indicator">
+        <div class="step-item active" data-step="1">1. Template</div>
+        <div class="step-item" data-step="2">2. Discovery</div>
+        <div class="step-item" data-step="3">3. Configuration</div>
+        <div class="step-item" data-step="4">4. Validation</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Step 1: Template Selection -->
+      <div class="step active" id="step-1">
+        <h2>Choose Device Template</h2>
+        <p>Select the type of device you want to add. This will pre-configure the appropriate settings.</p>
+        
+        <div class="form-group">
+          <label>Filter by device type:</label>
+          <select id="template-filter">
+            <option value="">All device types</option>
+            <option value="router">Routers</option>
+            <option value="access_point">Access Points</option>
+            <option value="printer">Printers</option>
+            <option value="server">Servers</option>
+            <option value="modem">Modems</option>
+          </select>
+        </div>
+
+        <div class="template-grid" id="template-grid">
+          <!-- Templates will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Step 2: Network Discovery -->
+      <div class="step" id="step-2">
+        <h2>Network Discovery</h2>
+        <p>Scan your network to find devices automatically, or skip to configure manually.</p>
+
+        <div class="mode-toggle">
+          <button type="button" class="mode-btn btn btn-primary" data-mode="scan">Scan Range</button>
+          <button type="button" class="mode-btn btn btn-outline" data-mode="manual">Manual Input</button>
+        </div>
+        
+        <div class="discovery-section" id="scan-discovery-section">
+          <h3>Scan Network Range</h3>
+          <div class="form-group">
+            <label>Network Range:</label>
+            <select id="network-range">
+              <!-- Network ranges will be loaded here -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="port-scan" checked> 
+              Perform port scanning (slower but more detailed)
+            </label>
+          </div>
+          
+          <button class="btn btn-primary" data-wizard-action="start-discovery">Start Network Scan</button>
+          <button class="btn btn-outline" data-wizard-action="skip-discovery">Skip Discovery</button>
+        </div>
+
+        <div class="discovery-section hidden manual-discovery-section" id="manual-discovery-section">
+          <h3>Enter Device Manually</h3>
+          <p>If the device is outside the suggested ranges, enter its IP address or a custom range.</p>
+          <div class="form-group">
+            <label for="manual-device-ip">Device Address:</label>
+            <input type="text" id="manual-device-ip" placeholder="192.168.100.10 or 192.168.1.10-192.168.1.50 or 10.0.0.0/24" title="Enter a single IP, a start-end range, or CIDR (e.g. 192.168.1.10, 192.168.1.10-192.168.1.20, 10.0.0.0/24)">
+            <div class="help">Examples: 192.168.1.10, 192.168.1.10-192.168.1.20, 10.0.0.0/24</div>
+          </div>
+          <button class="btn btn-secondary" data-wizard-action="use-manual-device">Use This Device</button>
+        </div>
+
+        <div id="discovery-results" class="hidden">
+          <h3>Discovered Devices</h3>
+          <p>Click on a device to select it for configuration:</p>
+          <div class="device-grid" id="device-grid">
+            <!-- Discovered devices will be shown here -->
+          </div>
+        </div>
+
+        <div id="discovery-loading" class="loading hidden">
+          <div class="spinner"></div>
+          <p>Scanning network... This may take a few minutes.</p>
+        </div>
+      </div>
+
+      <!-- Step 3: Device Configuration -->
+      <div class="step" id="step-3">
+        <h2>Device Configuration</h2>
+        <p>Configure the device settings. Required fields are marked with *</p>
+
+        <div id="device-guidance" class="guidance-panel hidden" role="note"></div>
+
+        <form id="device-form">
+          <!-- Form fields will be generated based on selected template -->
+        </form>
+      </div>
+
+      <!-- Step 4: Validation -->
+      <div class="step" id="step-4">
+        <h2>Validation & Testing</h2>
+        <p>Testing device connectivity and configuration...</p>
+        
+        <div id="validation-loading" class="loading">
+          <div class="spinner"></div>
+          <p>Validating device configuration...</p>
+        </div>
+
+        <div id="validation-results" class="validation-results hidden">
+          <!-- Validation results will be shown here -->
+        </div>
+
+        <div id="final-summary" class="hidden">
+          <h3>Device Summary</h3>
+          <div id="device-summary">
+            <!-- Device summary will be shown here -->
+          </div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-secondary" id="prev-btn" data-wizard-action="prev-step" disabled>Previous</button>
+        <button class="btn btn-primary" id="next-btn" data-wizard-action="next-step">Next</button>
+        <button class="btn btn-primary hidden" id="finish-btn" data-wizard-action="finish-wizard">Add Device</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ssh-key-manager" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">SSH Key Manager</h3>
+        <button type="button" class="btn btn-outline" data-wizard-action="close-ssh-key-manager">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="key-list" id="ssh-key-list"></div>
+
+        <div class="key-add">
+          <h4 class="modal-section-title">Add New Key</h4>
+          <div class="form-group form-group-tight">
+            <label for="new-ssh-key-name">Key Name:</label>
+            <input type="text" id="new-ssh-key-name" placeholder="e.g., datacenter-router-key">
+          </div>
+          <div class="form-group form-group-tight">
+            <label for="new-ssh-key-content">Private Key (PEM):</label>
+            <textarea id="new-ssh-key-content" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"></textarea>
+          </div>
+          <div class="key-actions">
+            <button type="button" class="btn btn-primary" data-wizard-action="save-ssh-key">Save Key</button>
+            <div class="key-note">Keys are stored encrypted on disk.</div>
+          </div>
+        </div>
+
+        <div id="ssh-key-viewer" class="key-viewer hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/js/dashboard/shared.js"></script>
+  <script>
+    // Global state
+    const MODE_SCAN = 'scan';
+    const MODE_MANUAL = 'manual';
+
+    const SSH_KEY_REFERENCE_PREFIX = 'sshkey:';
+    const SSH_KEY_PATH_OPTION = '__path__';
+    const toastContainer = document.getElementById('toast-container');
+
+    function showToast(options = {}) {
+      if (!toastContainer) {
+        console.warn('Toast container is unavailable.');
+        return { dismiss: () => {} };
+      }
+
+      const {
+        message = '',
+        type = '',
+        duration = 5000,
+        actionText,
+        onAction,
+        dismissText = 'Dismiss'
+      } = options;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      if (type) {
+        toast.classList.add(type);
+      }
+
+      const messageSpan = document.createElement('span');
+      if (typeof message === 'function') {
+        messageSpan.textContent = message();
+      } else {
+        messageSpan.textContent = String(message);
+      }
+      toast.appendChild(messageSpan);
+
+      let dismissed = false;
+      let timeoutId;
+
+      function dismiss() {
+        if (dismissed) {
+          return;
+        }
+        dismissed = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        toast.remove();
+      }
+
+      if (actionText && typeof onAction === 'function') {
+        const actionBtn = document.createElement('button');
+        actionBtn.type = 'button';
+        actionBtn.textContent = actionText;
+        actionBtn.addEventListener('click', async (evt) => {
+          evt.stopPropagation();
+          try {
+            const result = await onAction(dismiss);
+            if (result !== false) {
+              dismiss();
+            }
+          } catch (error) {
+            console.error('Toast action failed', error);
+          }
+        });
+        toast.appendChild(actionBtn);
+      }
+
+      const dismissBtn = document.createElement('button');
+      dismissBtn.type = 'button';
+      dismissBtn.textContent = dismissText;
+      dismissBtn.addEventListener('click', (evt) => {
+        evt.stopPropagation();
+        dismiss();
+      });
+      toast.appendChild(dismissBtn);
+
+      toastContainer.appendChild(toast);
+
+      if (Number.isFinite(duration) && duration > 0) {
+        timeoutId = window.setTimeout(dismiss, duration);
+      }
+
+      return { dismiss };
+    }
+
+    function notifyInfo(message, options = {}) {
+      return showToast({ message, type: 'info', ...options });
+    }
+
+    function notifySuccess(message, options = {}) {
+      return showToast({ message, type: 'success', ...options });
+    }
+
+    function notifyWarning(message, options = {}) {
+      return showToast({ message, type: 'warning', ...options });
+    }
+
+    function notifyError(message, options = {}) {
+      return showToast({ message, type: 'error', ...options });
+    }
+    let currentStep = 1;
+    let selectedTemplate = null;
+    let selectedDevice = null;
+    let deviceConfig = { meta: {} };
+    let templates = [];
+    let networkRanges = [];
+    let discoveryMode = MODE_SCAN;
+    let sshKeys = [];
+    let sshKeyLoadErrorNotified = false;
+
+    // Utility functions
+    async function json(url, opts={}) { 
+      const r = await fetch(url, opts); 
+      if (!r.ok) throw new Error(await r.text()); 
+      return r.json(); 
+    }
+
+    function escapeHTML(value) {
+      return (value || '').replace(/[&<>"']/g, match => {
+        switch (match) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case "'": return '&#39;';
+          default: return match;
+        }
+      });
+    }
+
+    function getPlatformBadgeFactory() {
+      const shared = window.PulseOps?.shared || window.shared;
+      if (!shared) { return null; }
+      const factory = shared.ui?.createPlatformBadge || shared.utils?.createPlatformBadge;
+      return typeof factory === 'function' ? factory : null;
+    }
+
+    function renderPlatformBadgeHTML(platformName, options = {}) {
+      const label = (platformName || '').toString().trim();
+      if (!label) { return ''; }
+      const opts = typeof options === 'string' ? { variant: options } : options;
+      if (opts.variant === 'compact') {
+        return '';
+      }
+      const factory = getPlatformBadgeFactory();
+      if (factory) {
+        try {
+          const badge = factory(label, opts);
+          if (badge) {
+            return badge.outerHTML;
+          }
+        } catch (error) {
+          console.warn('renderPlatformBadgeHTML fallback', error);
+        }
+      }
+      return `<span class="platform-badge-fallback">${escapeHTML(label.toUpperCase())}</span>`;
+    }
+
+    function formatTimestamp(value) {
+      if (!value) return '—';
+      let date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        const isoCandidate = value.replace(' ', 'T') + 'Z';
+        date = new Date(isoCandidate);
+      }
+      if (Number.isNaN(date.getTime())) {
+        return value;
+      }
+      return date.toLocaleString();
+    }
+
+    function generateRandomSuffix(length = 5) {
+      return Math.random().toString(36).slice(2, 2 + length);
+    }
+
+    function deriveDefaultDeviceName(device = selectedDevice) {
+      if (device && device.hostname) {
+        return device.hostname.split('.')[0];
+      }
+
+      const host = device?.ip || deviceConfig.host;
+      if (host) {
+        return `device-${host.replace(/\./g, '-')}`;
+      }
+
+      return `device-${generateRandomSuffix()}`;
+    }
+
+    function showStep(step) {
+      const currentStepEl = document.querySelector('.step.active');
+      const targetStepEl = document.getElementById(`step-${step}`);
+
+      // Add slide out animation to current step
+      if (currentStepEl && currentStepEl !== targetStepEl) {
+        currentStepEl.classList.add('slide-out-left');
+
+        setTimeout(() => {
+          // Hide all steps
+          document.querySelectorAll('.step').forEach(s => {
+            s.classList.remove('active', 'slide-out-left', 'slide-in-right', 'template-selection-complete');
+          });
+          document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+
+          // Show target step with slide in animation
+          targetStepEl.classList.add('slide-in-right');
+          setTimeout(() => {
+            targetStepEl.classList.add('active');
+          }, 50);
+
+        }, 200);
+      } else {
+        // Initial load or same step
+        document.querySelectorAll('.step').forEach(s => {
+          s.classList.remove('active', 'slide-out-left', 'slide-in-right', 'template-selection-complete');
+        });
+        document.querySelectorAll('.step-item').forEach(s => s.classList.remove('active'));
+        targetStepEl.classList.add('active');
+      }
+
+      // Update step indicator
+      document.querySelector(`[data-step="${step}"]`).classList.add('active');
+
+      // Mark completed steps
+      for (let i = 1; i < step; i++) {
+        document.querySelector(`[data-step="${i}"]`).classList.add('completed');
+      }
+
+      // Update buttons
+      document.getElementById('prev-btn').disabled = step === 1;
+      document.getElementById('next-btn').style.display = step === 4 ? 'none' : 'block';
+      document.getElementById('finish-btn').style.display = step === 4 ? 'block' : 'none';
+
+      // Reset template cards if going back to step 1
+      if (step === 1) {
+        setTimeout(() => {
+          document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('fade-out-others', 'selected');
+          });
+        }, 300);
+      }
+    }
+
+    function setDiscoveryMode(mode) {
+      discoveryMode = mode;
+
+      const scanSection = document.getElementById('scan-discovery-section');
+      const manualSection = document.getElementById('manual-discovery-section');
+
+      if (scanSection) {
+        scanSection.classList.toggle('hidden', mode !== MODE_SCAN);
+      }
+
+      if (manualSection) {
+        manualSection.classList.toggle('hidden', mode !== MODE_MANUAL);
+      }
+
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        const btnMode = btn.getAttribute('data-mode');
+        btn.classList.remove('btn-primary', 'btn-outline');
+        btn.classList.add(btnMode === mode ? 'btn-primary' : 'btn-outline');
+      });
+    }
+
+    function nextStep() {
+      if (currentStep < 4) {
+        if (validateCurrentStep()) {
+          currentStep++;
+          showStep(currentStep);
+          
+          if (currentStep === 3) {
+            generateConfigForm();
+          } else if (currentStep === 4) {
+            validateDevice();
+          }
+        }
+      }
+    }
+
+    function previousStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    }
+
+    function validateCurrentStep() {
+      switch (currentStep) {
+        case 1:
+          if (!selectedTemplate) {
+            notifyError('Please select a device template.');
+            return false;
+          }
+          return true;
+        case 2:
+          return true; // Discovery is optional
+        case 3:
+          return validateForm();
+        default:
+          return true;
+      }
+    }
+
+    // Initialize the wizard
+    async function init() {
+      try {
+        // Initialize theme from stored preference
+        if(window.themeManager) {
+          const storedTheme = window.themeManager.getStoredTheme();
+          if(storedTheme) {
+            window.themeManager.setTheme(storedTheme);
+          }
+        }
+
+        // Load templates
+        templates = await json('/api/templates');
+        renderTemplates();
+
+        // Load network ranges
+        networkRanges = await json('/api/discovery/ranges');
+        renderNetworkRanges();
+
+        await loadSSHKeys();
+
+        setDiscoveryMode(MODE_SCAN);
+      } catch (error) {
+        console.error('Failed to initialize wizard:', error);
+        notifyError('Failed to load wizard data. Please refresh the page.');
+      }
+    }
+
+    // Template rendering and selection
+    function renderTemplates() {
+      const grid = document.getElementById('template-grid');
+      const filter = document.getElementById('template-filter').value;
+
+      const filteredTemplates = filter ? templates.filter(t => t.kind === filter) : templates;
+
+      grid.innerHTML = filteredTemplates.map(template => {
+        const idValue = (template.id ?? '').replace(/'/g, "\\'");
+        const platformLabel = (template.platform || '').trim();
+        const badgeHTML = platformLabel ? renderPlatformBadgeHTML(platformLabel, { variant: 'compact' }) : '';
+        const metaPlatformHTML = platformLabel ? renderPlatformBadgeHTML(platformLabel, { variant: 'inline' }) : '—';
+        const nameHTML = escapeHTML(template.name || 'Untitled template');
+        const descriptionHTML = escapeHTML(template.description || 'No description provided.');
+        const kindHTML = escapeHTML(template.kind || '—');
+        return `
+          <div class="template-card" onclick="selectTemplate('${idValue}')">
+            <div class="template-card-header">
+              <div class="template-title-section">
+                <h3 class="template-name">${nameHTML}</h3>
+                ${badgeHTML || ''}
+              </div>
+              <div class="template-icon">
+                ${getTemplateIcon(template.kind)}
+              </div>
+            </div>
+            <div class="template-description">
+              <p>${descriptionHTML}</p>
+            </div>
+            <div class="template-meta">
+              <div class="meta-item">
+                <span class="meta-label">Platform</span>
+                <span class="meta-value">${metaPlatformHTML}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Type</span>
+                <span class="meta-value">${kindHTML}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getTemplateIcon(kind) {
+      const icons = {
+        'router': '🌐',
+        'access_point': '📡',
+        'printer': '🖨️',
+        'server': '🖥️',
+        'modem': '📶',
+        'firewall': '🛡️',
+        'switch': '🔀',
+        'gateway': '🚪'
+      };
+      return icons[kind] || '📱';
+    }
+
+    function selectTemplate(templateId) {
+      selectedTemplate = templates.find(t => t.id === templateId);
+      const selectedCard = event.target.closest('.template-card');
+
+      // Update UI with animation
+      document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.remove('selected');
+        if (card !== selectedCard) {
+          card.classList.add('fade-out-others');
+        }
+      });
+
+      selectedCard.classList.add('selected');
+
+      // Auto-advance to next step after animation
+      setTimeout(() => {
+        animateToNextStep();
+      }, 500);
+    }
+
+    function animateToNextStep() {
+      if (currentStep === 1 && selectedTemplate) {
+        // Add completion class to trigger fade out animation
+        const step1 = document.getElementById('step-1');
+        step1.classList.add('template-selection-complete');
+
+        // Wait for fade out, then proceed to next step
+        setTimeout(() => {
+          nextStep();
+
+          // Add entrance animation to discovery section
+          setTimeout(() => {
+            const discoverySection = document.querySelector('.discovery-section');
+            if (discoverySection) {
+              discoverySection.classList.add('animate-in');
+            }
+          }, 100);
+        }, 500);
+      }
+    }
+
+    // Network discovery
+    function renderNetworkRanges() {
+      const select = document.getElementById('network-range');
+      select.innerHTML = networkRanges.map(range =>
+        `<option value="${range.network}">${range.network} (${range.start} - ${range.end})</option>`
+      ).join('');
+    }
+
+    async function loadSSHKeys() {
+      try {
+        sshKeys = await json('/api/ssh-keys');
+      } catch (error) {
+        console.error('Failed to load SSH keys:', error);
+        sshKeys = [];
+        if (!sshKeyLoadErrorNotified) {
+          notifyWarning('SSH key manager is unavailable. You can still provide a filesystem path.');
+          sshKeyLoadErrorNotified = true;
+        }
+      }
+      refreshSSHKeySelect();
+    }
+
+    function refreshSSHKeySelect(preservedValue) {
+      const select = document.getElementById('ssh-key-select');
+      const hidden = document.getElementById('ssh-key-hidden');
+      if (!select || !hidden) {
+        return;
+      }
+
+      const currentValue = preservedValue !== undefined ? preservedValue : hidden.value;
+      const existingValues = new Set();
+
+      select.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = sshKeys.length ? 'Select a saved key' : 'No saved keys available';
+      select.appendChild(placeholder);
+      existingValues.add('');
+
+      sshKeys.forEach(key => {
+        const option = document.createElement('option');
+        const reference = `${SSH_KEY_REFERENCE_PREFIX}${key.id}`;
+        option.value = reference;
+        option.textContent = `${key.name} (${key.fingerprint})`;
+        select.appendChild(option);
+        existingValues.add(reference);
+      });
+
+      const pathOption = document.createElement('option');
+      pathOption.value = SSH_KEY_PATH_OPTION;
+      pathOption.textContent = 'Use filesystem path';
+      select.appendChild(pathOption);
+      existingValues.add(SSH_KEY_PATH_OPTION);
+
+      if (currentValue && currentValue.startsWith(SSH_KEY_REFERENCE_PREFIX) && !existingValues.has(currentValue)) {
+        const missingOption = document.createElement('option');
+        missingOption.value = currentValue;
+        missingOption.textContent = `Stored key ${currentValue.replace(SSH_KEY_REFERENCE_PREFIX, '#')}`;
+        select.appendChild(missingOption);
+      }
+
+      setSSHKeySelection(currentValue);
+    }
+
+    function setSSHKeySelection(value) {
+      const select = document.getElementById('ssh-key-select');
+      const hidden = document.getElementById('ssh-key-hidden');
+      const pathInput = document.getElementById('ssh-key-path-input');
+      if (!select || !hidden || !pathInput) {
+        return;
+      }
+
+      if (value && value.startsWith(SSH_KEY_REFERENCE_PREFIX)) {
+        select.value = value;
+        hidden.value = value;
+        pathInput.value = '';
+        pathInput.classList.add('hidden');
+      } else if (value) {
+        select.value = SSH_KEY_PATH_OPTION;
+        hidden.value = value;
+        pathInput.value = value;
+        pathInput.classList.remove('hidden');
+      } else {
+        select.value = '';
+        hidden.value = '';
+        pathInput.value = '';
+        pathInput.classList.add('hidden');
+      }
+
+      deviceConfig.ssh_key = hidden.value;
+    }
+
+    function initializeSSHKeyField(initialValue, placeholder) {
+      const select = document.getElementById('ssh-key-select');
+      const hidden = document.getElementById('ssh-key-hidden');
+      const pathInput = document.getElementById('ssh-key-path-input');
+      if (!select || !hidden || !pathInput) {
+        return;
+      }
+
+      if (placeholder) {
+        pathInput.setAttribute('placeholder', placeholder);
+      }
+
+      refreshSSHKeySelect(initialValue);
+
+      select.addEventListener('change', () => {
+        const selection = select.value;
+        if (selection === SSH_KEY_PATH_OPTION) {
+          pathInput.classList.remove('hidden');
+          hidden.value = pathInput.value.trim();
+        } else if (selection === '') {
+          hidden.value = '';
+          pathInput.value = '';
+          pathInput.classList.add('hidden');
+        } else {
+          hidden.value = selection;
+          pathInput.value = '';
+          pathInput.classList.add('hidden');
+        }
+        deviceConfig.ssh_key = hidden.value;
+      });
+
+      pathInput.addEventListener('input', () => {
+        hidden.value = pathInput.value.trim();
+        deviceConfig.ssh_key = hidden.value;
+      });
+    }
+
+    function openSSHKeyManager() {
+      const overlay = document.getElementById('ssh-key-manager');
+      if (!overlay) return;
+      overlay.classList.add('active');
+      const viewer = document.getElementById('ssh-key-viewer');
+      if (viewer) {
+        viewer.classList.add('hidden');
+        viewer.textContent = '';
+      }
+      renderSSHKeyList();
+    }
+
+    function closeSSHKeyManager() {
+      const overlay = document.getElementById('ssh-key-manager');
+      if (!overlay) return;
+      overlay.classList.remove('active');
+      const viewer = document.getElementById('ssh-key-viewer');
+      if (viewer) {
+        viewer.classList.add('hidden');
+        viewer.textContent = '';
+      }
+    }
+
+    function renderSSHKeyList() {
+      const list = document.getElementById('ssh-key-list');
+      const viewer = document.getElementById('ssh-key-viewer');
+      if (!list) return;
+
+      if (sshKeys.length === 0) {
+        list.innerHTML = '<div class="key-empty">No SSH keys saved yet. Add one below.</div>';
+        if (viewer) {
+          viewer.classList.add('hidden');
+          viewer.textContent = '';
+        }
+        return;
+      }
+
+      list.innerHTML = sshKeys.map(key => {
+        const added = formatTimestamp(key.created_at);
+        return `
+          <div class="key-item">
+            <div class="key-meta">
+              <strong>${escapeHTML(key.name)}</strong>
+              <span>Fingerprint: ${escapeHTML(key.fingerprint)}</span>
+              <span>Added: ${escapeHTML(added)}</span>
+            </div>
+            <div class="key-actions">
+              <button type="button" class="btn btn-outline" onclick="viewSSHKey(${key.id})">View</button>
+              <button type="button" class="btn btn-outline" onclick="selectSSHKeyFromManager(${key.id})">Use</button>
+              <button type="button" class="btn btn-secondary" onclick="deleteSSHKey(${key.id})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function addNewSSHKey() {
+      const nameInput = document.getElementById('new-ssh-key-name');
+      const contentInput = document.getElementById('new-ssh-key-content');
+      if (!nameInput || !contentInput) return;
+
+      const name = nameInput.value.trim();
+      const keyMaterial = contentInput.value.trim();
+
+      if (!name || !keyMaterial) {
+        notifyError('Please provide both a name and key content.');
+        return;
+      }
+
+      try {
+        const response = await json('/api/ssh-keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, private_key: keyMaterial })
+        });
+
+        nameInput.value = '';
+        contentInput.value = '';
+
+        await loadSSHKeys();
+        renderSSHKeyList();
+        setSSHKeySelection(response.reference);
+        notifySuccess('SSH key saved. It has been selected for the device.');
+      } catch (error) {
+        notifyError('Failed to save SSH key: ' + error.message);
+      }
+    }
+
+    async function deleteSSHKey(id) {
+      if (!confirm('Delete this SSH key? This cannot be undone.')) {
+        return;
+      }
+
+      try {
+        await json(`/api/ssh-keys/${id}`, { method: 'DELETE' });
+        sshKeys = sshKeys.filter(key => key.id !== id);
+        renderSSHKeyList();
+        refreshSSHKeySelect();
+
+        const hidden = document.getElementById('ssh-key-hidden');
+        if (hidden && hidden.value === `${SSH_KEY_REFERENCE_PREFIX}${id}`) {
+          setSSHKeySelection('');
+        }
+      } catch (error) {
+        notifyError('Failed to delete SSH key: ' + error.message);
+      }
+    }
+
+    async function viewSSHKey(id) {
+      try {
+        const detail = await json(`/api/ssh-keys/${id}`);
+        const viewer = document.getElementById('ssh-key-viewer');
+        if (viewer) {
+          viewer.classList.remove('hidden');
+          viewer.textContent = detail.private_key;
+        }
+      } catch (error) {
+        notifyError('Failed to load SSH key: ' + error.message);
+      }
+    }
+
+    function selectSSHKeyFromManager(id) {
+      setSSHKeySelection(`${SSH_KEY_REFERENCE_PREFIX}${id}`);
+      closeSSHKeyManager();
+    }
+
+    async function startDiscovery() {
+      const networkRange = document.getElementById('network-range').value;
+      const selectedRange = networkRanges.find(r => r.network === networkRange);
+
+      if (!selectedRange) {
+        notifyError('Please select a network range to scan.');
+        return;
+      }
+
+      await performDiscovery(selectedRange);
+    }
+
+    async function performDiscovery(range) {
+      const portScanCheckbox = document.getElementById('port-scan');
+      const portScan = portScanCheckbox ? portScanCheckbox.checked : true;
+
+      document.getElementById('discovery-loading').classList.remove('hidden');
+      document.getElementById('discovery-results').classList.add('hidden');
+
+      try {
+        const response = await json('/api/discovery/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            network: range.network || '',
+            start: range.start || '',
+            end: range.end || '',
+            options: {
+              port_scan: portScan,
+              timeout: 3000000000, // 3 seconds in nanoseconds
+              max_concurrent: 50
+            }
+          })
+        });
+
+        const devices = Array.isArray(response.devices) ? response.devices : [];
+
+        sessionStorage.setItem('discoveredDevices', JSON.stringify(devices));
+
+        renderDiscoveredDevices(devices);
+        document.getElementById('discovery-results').classList.remove('hidden');
+      } catch (error) {
+        console.error('Discovery failed:', error);
+        notifyError('Network discovery failed: ' + error.message);
+      } finally {
+        document.getElementById('discovery-loading').classList.add('hidden');
+      }
+    }
+
+    function isValidIPv4(ip) {
+      const parts = ip.split('.');
+      if (parts.length !== 4) return false;
+      return parts.every(part => {
+        if (!/^\d+$/.test(part)) return false;
+        const value = Number(part);
+        return value >= 0 && value <= 255;
+      });
+    }
+
+    function isValidCIDR(value) {
+      const match = value.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\/(\d|[12]\d|3[0-2])$/);
+      if (!match) return false;
+      for (let i = 1; i <= 4; i++) {
+        const octet = Number(match[i]);
+        if (octet < 0 || octet > 255) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function ipToNumber(ip) {
+      return ip.split('.').reduce((acc, part) => (acc << 8) + Number(part), 0);
+    }
+
+    function parseManualInput(value) {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+
+      if (trimmed.includes('/')) {
+        if (isValidCIDR(trimmed)) {
+          return { type: 'cidr', network: trimmed };
+        }
+        return null;
+      }
+
+      if (trimmed.includes('-')) {
+        const parts = trimmed.split('-');
+        if (parts.length !== 2) return null;
+        const start = parts[0].trim();
+        const end = parts[1].trim();
+        if (!isValidIPv4(start) || !isValidIPv4(end)) return null;
+        if (ipToNumber(start) > ipToNumber(end)) return null;
+        return { type: 'range', start, end };
+      }
+
+      if (isValidIPv4(trimmed)) {
+        return { type: 'single', ip: trimmed };
+      }
+
+      return null;
+    }
+
+    async function useManualDevice() {
+      const input = document.getElementById('manual-device-ip');
+      if (!input) return;
+
+      const value = (input.value || '').trim();
+      if (!value) {
+        notifyError('Please enter a device address.');
+        return;
+      }
+
+      const parsed = parseManualInput(value);
+      if (!parsed) {
+        notifyError('Enter a valid IPv4 address, range (start-end), or CIDR block.');
+        return;
+      }
+
+      if (parsed.type === 'single') {
+        const manualDevice = {
+          ip: parsed.ip,
+          hostname: '',
+          open_ports: [],
+          suggestions: [],
+          ping_time: null,
+          manual: true
+        };
+
+        const stored = sessionStorage.getItem('discoveredDevices');
+        let devices = [];
+
+        if (stored) {
+          try {
+            const existing = JSON.parse(stored);
+            if (Array.isArray(existing)) {
+              devices = existing;
+            }
+          } catch (error) {
+            console.error('Failed to parse stored devices', error);
+          }
+        }
+
+        if (!devices.some(d => d.ip === parsed.ip)) {
+          devices.push(manualDevice);
+        }
+
+        sessionStorage.setItem('discoveredDevices', JSON.stringify(devices));
+        renderDiscoveredDevices(devices);
+        document.getElementById('discovery-results').classList.remove('hidden');
+        document.getElementById('discovery-loading').classList.add('hidden');
+
+        deviceConfig.host = parsed.ip;
+        selectedDevice = manualDevice;
+
+        if (!deviceConfig.name) {
+          deviceConfig.name = deriveDefaultDeviceName(manualDevice);
+        }
+
+        selectDiscoveredDevice(parsed.ip);
+        input.value = '';
+        return;
+      }
+
+      if (parsed.type === 'range') {
+        await performDiscovery({ network: '', start: parsed.start, end: parsed.end });
+        input.value = '';
+        return;
+      }
+
+      if (parsed.type === 'cidr') {
+        await performDiscovery({ network: parsed.network, start: '', end: '' });
+        input.value = '';
+      }
+    }
+
+    function renderDiscoveredDevices(devices) {
+      const grid = document.getElementById('device-grid');
+
+      if (!Array.isArray(devices)) {
+        console.warn('renderDiscoveredDevices expected an array. Got:', devices);
+        devices = [];
+      }
+
+      if (devices.length === 0) {
+        grid.innerHTML = '<p>No devices found. Try a different network range or skip discovery.</p>';
+        return;
+      }
+
+      grid.innerHTML = devices.map(device => {
+        const openPorts = Array.isArray(device.open_ports) ? device.open_ports : [];
+        const suggestions = Array.isArray(device.suggestions) ? device.suggestions : [];
+        const pingTime = typeof device.ping_time === 'number' ? `${device.ping_time.toFixed(1)}ms` : '--';
+        const ipRaw = device.ip || '';
+        const ipDisplay = ipRaw ? escapeHTML(ipRaw) : '—';
+        const ipAttr = ipRaw ? ` data-ip="${escapeHTML(ipRaw)}"` : '';
+        const cardIpAttr = escapeHTML(ipRaw);
+
+        return `
+        <div class="device-card" data-device-ip="${cardIpAttr}" onclick="selectDiscoveredDevice('${device.ip}', this)">
+          <div class="device-info">
+            <span class="device-ip"${ipAttr}>${ipDisplay}</span>
+            <span class="device-ping">${pingTime}</span>
+          </div>
+          ${device.hostname ? `<div class="device-hostname">${device.hostname}</div>` : ''}
+          <div class="device-services">
+            ${openPorts.map(port => `<span class="service-tag">Port ${port}</span>`).join('')}
+          </div>
+          ${suggestions.length > 0 ? `
+            <div class="suggestions">
+              ${suggestions.map(s => `<span class="suggestion-tag">${s}</span>`).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+      }).join('');
+    }
+
+    function selectDiscoveredDevice(ip, cardElement) {
+      const stored = sessionStorage.getItem('discoveredDevices');
+      let devices = [];
+
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            devices = parsed;
+          }
+        } catch (error) {
+          console.error('Failed to parse stored devices', error);
+        }
+      }
+
+      selectedDevice = devices.find(d => d.ip === ip);
+
+      // Update UI
+      document.querySelectorAll('.device-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      const card = cardElement ? cardElement.closest('.device-card') : document.querySelector(`[data-device-ip="${ip}"]`);
+      if (card) {
+        card.classList.add('selected');
+      }
+
+      // Pre-fill device config
+      if (selectedDevice) {
+        deviceConfig.host = selectedDevice.ip;
+        if (selectedDevice.hostname) {
+          deviceConfig.name = selectedDevice.hostname.split('.')[0];
+        }
+
+        if (!deviceConfig.name) {
+          deviceConfig.name = deriveDefaultDeviceName(selectedDevice);
+        }
+
+        // Auto-select template based on suggestions
+        const suggestions = Array.isArray(selectedDevice.suggestions) ? selectedDevice.suggestions : [];
+        if (suggestions.length > 0 && !selectedTemplate) {
+          const suggestedTemplate = templates.find(t => t.id === suggestions[0]);
+          if (suggestedTemplate) {
+            selectedTemplate = suggestedTemplate;
+          }
+        }
+      }
+    }
+
+    function skipDiscovery() {
+      // Just proceed to next step
+      nextStep();
+    }
+
+    // Form generation and validation
+    function generateConfigForm() {
+      if (!selectedTemplate) return;
+
+      const form = document.getElementById('device-form');
+
+      const nameField = selectedTemplate.fields.find(field => field.name === 'name');
+      if (nameField && !deviceConfig[nameField.name]) {
+        deviceConfig[nameField.name] = deriveDefaultDeviceName();
+      }
+
+      form.innerHTML = selectedTemplate.fields.map(field => {
+        const value = deviceConfig[field.name] || field.default || '';
+
+        if (field.name === 'ssh_key') {
+          return `
+            <div class="form-group" id="ssh-key-form-group">
+              <label>${field.label}${field.required ? ' *' : ''}</label>
+              <div class="ssh-key-field-controls">
+                <select id="ssh-key-select" ${field.required ? 'required' : ''}></select>
+                <button type="button" class="btn btn-secondary" onclick="openSSHKeyManager()">Manage Keys</button>
+              </div>
+              <input type="text" id="ssh-key-path-input" class="hidden" placeholder="${field.placeholder || ''}">
+              <input type="hidden" name="${field.name}" id="ssh-key-hidden" value="${value}">
+              ${field.help ? `<div class="help">${field.help}</div>` : ''}
+            </div>
+          `;
+        }
+
+        let input = '';
+        switch (field.type) {
+          case 'select':
+            input = `
+              <select name="${field.name}" ${field.required ? 'required' : ''}>
+                <option value="">Choose...</option>
+                ${field.options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+              </select>
+            `;
+            break;
+          case 'textarea':
+            input = `<textarea name="${field.name}" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>${value}</textarea>`;
+            break;
+          case 'password':
+            input = `<input type="password" name="${field.name}" placeholder="${field.placeholder}" value="${value}" ${field.required ? 'required' : ''}>`;
+            break;
+          case 'number':
+            input = `<input type="number" name="${field.name}" placeholder="${field.placeholder}" value="${value}" ${field.required ? 'required' : ''}>`;
+            break;
+          case 'file':
+            input = `<input type="text" name="${field.name}" placeholder="${field.placeholder}" value="${value}" ${field.required ? 'required' : ''}>`;
+            break;
+          default:
+            input = `<input type="text" name="${field.name}" placeholder="${field.placeholder}" value="${value}" ${field.required ? 'required' : ''}>`;
+        }
+
+        return `
+          <div class="form-group">
+            <label>${field.label}${field.required ? ' *' : ''}</label>
+            ${input}
+            ${field.help ? `<div class="help">${field.help}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      updateGuidancePanel(selectedTemplate);
+
+      const sshField = selectedTemplate.fields.find(field => field.name === 'ssh_key');
+      if (sshField) {
+        const initialValue = deviceConfig['ssh_key'] || sshField.default || '';
+        initializeSSHKeyField(initialValue, sshField.placeholder);
+      }
+    }
+
+    function updateGuidancePanel(template) {
+      const panel = document.getElementById('device-guidance');
+      if (!panel) return;
+
+      panel.classList.add('hidden');
+      panel.innerHTML = '';
+
+      if (!template) {
+        return;
+      }
+
+      const messages = [];
+
+      if ((template.platform || '').toLowerCase() === 'netgear') {
+        messages.push('<strong>Netgear reboot fallback:</strong> Netgear devices cannot be rebooted over SSH. Store the web interface username and password so PulseOps can trigger a reboot if SSH access fails.');
+        messages.push('Credentials saved here are only used for fallback automation tasks, such as web-based reboot operations.');
+      } else if (template.requires_password) {
+        messages.push('Store the web interface credentials so PulseOps can fall back to web automation whenever SSH access is unavailable.');
+      }
+
+      if (messages.length > 0) {
+        panel.innerHTML = messages.map(msg => `<p>${msg}</p>`).join('');
+        panel.classList.remove('hidden');
+      }
+    }
+
+    function validateForm() {
+      const form = document.getElementById('device-form');
+      const formData = new FormData(form);
+
+      // Clear previous errors
+      document.querySelectorAll('.error').forEach(el => el.remove());
+
+      let isValid = true;
+
+      deviceConfig.meta = deviceConfig.meta || {};
+
+      // Validate required fields
+      selectedTemplate.fields.forEach(field => {
+        const rawValue = formData.get(field.name);
+        const value = typeof rawValue === 'string' ? rawValue.trim() : rawValue;
+
+        if (field.required && (!value || value === '')) {
+          showFieldError(field.name, `${field.label} is required`);
+          isValid = false;
+        }
+
+        // Store in device config
+        deviceConfig[field.name] = value;
+
+        if (field.name === 'ssh_port') {
+          if (value === '') {
+            delete deviceConfig.meta.ssh_port;
+            deviceConfig.ssh_port = '';
+          } else {
+            const port = parseInt(value, 10);
+            if (Number.isNaN(port) || port <= 0 || port > 65535) {
+              showFieldError(field.name, 'Enter a valid SSH port between 1 and 65535');
+              isValid = false;
+            } else {
+              deviceConfig.meta.ssh_port = String(port);
+              deviceConfig.ssh_port = String(port);
+            }
+          }
+        }
+      });
+
+      // Set template-specific fields
+      deviceConfig.kind = selectedTemplate.kind;
+      deviceConfig.platform = selectedTemplate.platform;
+
+      return isValid;
+    }
+
+    function showFieldError(fieldName, message) {
+      const field = document.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        const error = document.createElement('div');
+        error.className = 'error';
+        error.textContent = message;
+        field.parentNode.appendChild(error);
+      }
+    }
+
+    // Device validation
+    async function validateDevice() {
+      document.getElementById('validation-loading').classList.remove('hidden');
+      document.getElementById('validation-results').classList.add('hidden');
+
+      try {
+        const payload = buildDevicePayload();
+        const result = await json('/api/devices/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        renderValidationResults(result);
+        document.getElementById('validation-results').classList.remove('hidden');
+
+        if (result.valid) {
+          renderDeviceSummary();
+          document.getElementById('final-summary').classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Validation failed:', error);
+        notifyError('Device validation failed: ' + error.message);
+      } finally {
+        document.getElementById('validation-loading').classList.add('hidden');
+      }
+    }
+
+    function renderValidationResults(result) {
+      const container = document.getElementById('validation-results');
+
+      let html = '';
+
+      const errors = Array.isArray(result.errors) ? result.errors : [];
+      const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+      const tests = result.tests || {};
+
+      if (errors.length > 0) {
+        html += '<h4>Errors</h4>';
+        errors.forEach(error => {
+          html += `<div class="validation-item validation-error">❌ ${error}</div>`;
+        });
+      }
+
+      if (warnings.length > 0) {
+        html += '<h4>Warnings</h4>';
+        warnings.forEach(warning => {
+          html += `<div class="validation-item validation-warning">⚠️ ${warning}</div>`;
+        });
+      }
+
+      if (tests) {
+        html += '<h4>Connectivity Tests</h4>';
+
+        if (tests.ping) {
+          const ping = tests.ping;
+          const timeDisplay = typeof ping.time_ms === 'number' ? ping.time_ms.toFixed(1) + 'ms' : (ping.time_ms || '--');
+          if (ping.success) {
+            html += `<div class="validation-item validation-success">✅ Ping test passed (${timeDisplay})</div>`;
+          } else {
+            html += `<div class="validation-item validation-error">❌ Ping test failed: ${ping.error}</div>`;
+          }
+        }
+
+        if (tests.ssh_port) {
+          const portTest = tests.ssh_port;
+          if (portTest.success) {
+            html += `<div class="validation-item validation-success">✅ SSH port ${portTest.port || '22'} accepted</div>`;
+          } else {
+            const message = portTest.error || 'SSH port is invalid';
+            html += `<div class="validation-item validation-error">❌ ${message}</div>`;
+          }
+        }
+
+        if (tests.ports) {
+          Object.entries(tests.ports).forEach(([port, test]) => {
+            if (test.success) {
+              html += `<div class="validation-item validation-success">✅ ${port} is accessible</div>`;
+            } else {
+              html += `<div class="validation-item validation-warning">⚠️ ${port} is not accessible</div>`;
+            }
+          });
+        }
+
+        if (tests.ssh_key) {
+          html += `<div class="validation-item validation-success">✅ SSH key file exists</div>`;
+        }
+      }
+
+      if (result.valid) {
+        html += '<div class="validation-item validation-success">✅ Device configuration is valid and ready to be added</div>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    function renderDeviceSummary() {
+      const container = document.getElementById('device-summary');
+      const portValue = deviceConfig.meta?.ssh_port || '22';
+      const portLabel = portValue === '22' ? '22 (default)' : portValue;
+      const nameHTML = escapeHTML(deviceConfig.name || 'New device');
+      const hostRaw = deviceConfig.host || '';
+      const hostHTML = escapeHTML(hostRaw || '—');
+      const hostAttr = hostRaw ? ` data-ip="${escapeHTML(hostRaw)}"` : '';
+      const templateNameHTML = escapeHTML(selectedTemplate?.name || '—');
+      const platformLabel = deviceConfig.platform || selectedTemplate?.platform || '';
+      const platformHTML = platformLabel ? (renderPlatformBadgeHTML(platformLabel, { variant: 'inline' }) || escapeHTML(platformLabel)) : '—';
+      const userHTML = escapeHTML(deviceConfig.user || 'Not specified');
+      const sshKeyHTML = deviceConfig.ssh_key ? escapeHTML(deviceConfig.ssh_key) : '';
+
+      container.innerHTML = `
+        <div class="summary-card">
+          <h4>${nameHTML}</h4>
+          <p><strong>Host:</strong> <span class="summary-host"${hostAttr}>${hostHTML}</span></p>
+          <p><strong>Template:</strong> ${templateNameHTML}</p>
+          <p><strong>Platform:</strong> <span class="summary-platform">${platformHTML}</span></p>
+          <p><strong>SSH Port:</strong> ${escapeHTML(portLabel)}</p>
+          <p><strong>User:</strong> ${userHTML}</p>
+          ${sshKeyHTML ? `<p><strong>SSH Key:</strong> ${sshKeyHTML}</p>` : ''}
+        </div>
+      `;
+    }
+
+    function buildDevicePayload() {
+      const payload = { ...deviceConfig };
+      const meta = { ...(deviceConfig.meta || {}) };
+
+      if (meta.ssh_port === '' || meta.ssh_port === undefined) {
+        delete meta.ssh_port;
+      }
+
+      if (Object.keys(meta).length > 0) {
+        payload.meta = meta;
+      } else {
+        delete payload.meta;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(payload, 'ssh_port')) {
+        delete payload.ssh_port;
+      }
+
+      return payload;
+    }
+
+    // Finish wizard
+    async function finishWizard() {
+      try {
+        const payload = buildDevicePayload();
+        const response = await json('/api/devices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        notifySuccess('Device added successfully!');
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Failed to create device:', error);
+        notifyError('Failed to create device: ' + error.message);
+      }
+    }
+
+    // Keyboard navigation
+    let selectedTemplateIndex = -1;
+    let selectedDeviceIndex = -1;
+
+    function updateTemplateSelection(index) {
+      const cards = document.querySelectorAll('.template-card:not(.fade-out-others)');
+      if (cards.length === 0) return;
+
+      // Remove previous selection
+      cards.forEach(card => card.classList.remove('keyboard-selected'));
+
+      // Wrap around
+      if (index < 0) index = cards.length - 1;
+      if (index >= cards.length) index = 0;
+
+      selectedTemplateIndex = index;
+      cards[index].classList.add('keyboard-selected');
+      cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function updateDeviceSelection(index) {
+      const cards = document.querySelectorAll('.device-card');
+      if (cards.length === 0) return;
+
+      // Remove previous selection
+      cards.forEach(card => card.classList.remove('keyboard-selected'));
+
+      // Wrap around
+      if (index < 0) index = cards.length - 1;
+      if (index >= cards.length) index = 0;
+
+      selectedDeviceIndex = index;
+      cards[index].classList.add('keyboard-selected');
+      cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function handleKeyboardNavigation(event) {
+      // Don't interfere with form inputs
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowUp':
+        case 'ArrowLeft':
+          event.preventDefault();
+          if (currentStep === 1) {
+            updateTemplateSelection(selectedTemplateIndex - 1);
+          } else if (currentStep === 2) {
+            updateDeviceSelection(selectedDeviceIndex - 1);
+          }
+          break;
+
+        case 'ArrowDown':
+        case 'ArrowRight':
+          event.preventDefault();
+          if (currentStep === 1) {
+            updateTemplateSelection(selectedTemplateIndex + 1);
+          } else if (currentStep === 2) {
+            updateDeviceSelection(selectedDeviceIndex + 1);
+          }
+          break;
+
+        case 'Enter':
+          event.preventDefault();
+          if (currentStep === 1 && selectedTemplateIndex >= 0) {
+            const cards = document.querySelectorAll('.template-card:not(.fade-out-others)');
+            if (cards[selectedTemplateIndex]) {
+              const templateId = cards[selectedTemplateIndex].onclick.toString().match(/'([^']+)'/)[1];
+              selectTemplate(templateId);
+            }
+          } else if (currentStep === 2 && selectedDeviceIndex >= 0) {
+            const cards = document.querySelectorAll('.device-card');
+            if (cards[selectedDeviceIndex]) {
+              const deviceIp = cards[selectedDeviceIndex].dataset.deviceIp;
+              selectDiscoveredDevice(deviceIp, cards[selectedDeviceIndex]);
+            }
+          } else {
+            // Trigger Next button
+            const nextBtn = document.getElementById('next-btn');
+            const finishBtn = document.getElementById('finish-btn');
+            if (nextBtn && !nextBtn.style.display === 'none' && !nextBtn.disabled) {
+              nextStep();
+            } else if (finishBtn && finishBtn.style.display !== 'none') {
+              finishWizard();
+            }
+          }
+          break;
+
+        case 'Escape':
+          // Go back or exit
+          if (currentStep > 1) {
+            previousStep();
+          } else {
+            window.location.href = '/';
+          }
+          break;
+      }
+    }
+
+    // Event listeners
+
+    // Delegated handler for discovery mode toggle buttons
+    document.addEventListener('click', (event) => {
+      const modeBtn = event.target.closest('.mode-btn');
+      if (!modeBtn) return;
+      const mode = modeBtn.getAttribute('data-mode');
+      if (!mode) return;
+      event.preventDefault();
+      setDiscoveryMode(mode);
+    });
+
+    // Delegated handler for wizard action buttons
+    document.addEventListener('click', (event) => {
+      const actionEl = event.target.closest('[data-wizard-action]');
+      if (!actionEl) return;
+      const action = actionEl.getAttribute('data-wizard-action');
+      switch (action) {
+        case 'start-discovery':
+          event.preventDefault();
+          startDiscovery();
+          break;
+        case 'skip-discovery':
+          event.preventDefault();
+          skipDiscovery();
+          break;
+        case 'use-manual-device':
+          event.preventDefault();
+          useManualDevice();
+          break;
+        case 'open-ssh-key-manager':
+          event.preventDefault();
+          openSSHKeyManager();
+          break;
+        case 'close-ssh-key-manager':
+          event.preventDefault();
+          closeSSHKeyManager();
+          break;
+        case 'save-ssh-key':
+          event.preventDefault();
+          addNewSSHKey();
+          break;
+        case 'next-step':
+          event.preventDefault();
+          nextStep();
+          break;
+        case 'prev-step':
+          event.preventDefault();
+          previousStep();
+          break;
+        case 'finish-wizard':
+          event.preventDefault();
+          finishWizard();
+          break;
+        default:
+          // no-op
+          break;
+      }
+    });
+
+    document.getElementById('template-filter').addEventListener('change', renderTemplates);
+    document.addEventListener('keydown', handleKeyboardNavigation);
+
+    // Reset keyboard selection when step changes
+    const originalShowStep = showStep;
+    showStep = function(step) {
+      selectedTemplateIndex = -1;
+      selectedDeviceIndex = -1;
+      originalShowStep(step);
+    };
+
+    init();
+  </script>
+</body>
+</html>

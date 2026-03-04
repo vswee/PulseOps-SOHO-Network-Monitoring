@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Simple Metric Hiding Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .metrics-compact { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; margin: 20px 0; }
+        .metric-compact-item { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        .metric-compact-item.metric-hidden { display: none; }
+        .metrics-toggle-container { text-align: center; margin: 10px 0; }
+        .metrics-toggle-btn { background: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+        .metrics-toggle-btn:hover { background: #0056b3; }
+        .card { border: 1px solid #ddd; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Simple Metric Hiding Test</h1>
+    
+    <div id="device-1" class="card">
+        <h3>Device 1 - Mixed Data</h3>
+        <div class="metrics-compact">
+            <div class="metric-compact-item" data-metric-key="ping_ms">
+                <div>Ping</div>
+                <div id="metric-ping_ms-1">15.2 ms</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="iperf_mbps">
+                <div>Bandwidth</div>
+                <div id="metric-iperf_mbps-1">n/a</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="cpu_usage_percent">
+                <div>CPU Usage</div>
+                <div id="metric-cpu_usage_percent-1">n/a</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="memory_used_percent">
+                <div>Memory</div>
+                <div id="metric-memory_used_percent-1">45.2%</div>
+            </div>
+        </div>
+        <div class="metrics-toggle-container" id="metrics-toggle-1">
+            <button class="metrics-toggle-btn" id="metrics-toggle-btn-1">Show hidden metrics</button>
+        </div>
+    </div>
+
+    <div id="device-2" class="card">
+        <h3>Device 2 - All N/A</h3>
+        <div class="metrics-compact">
+            <div class="metric-compact-item" data-metric-key="ping_ms">
+                <div>Ping</div>
+                <div id="metric-ping_ms-2">n/a</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="iperf_mbps">
+                <div>Bandwidth</div>
+                <div id="metric-iperf_mbps-2">n/a</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="cpu_usage_percent">
+                <div>CPU Usage</div>
+                <div id="metric-cpu_usage_percent-2">n/a</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="memory_used_percent">
+                <div>Memory</div>
+                <div id="metric-memory_used_percent-2">n/a</div>
+            </div>
+        </div>
+        <div class="metrics-toggle-container" id="metrics-toggle-2">
+            <button class="metrics-toggle-btn" id="metrics-toggle-btn-2">Show hidden metrics</button>
+        </div>
+    </div>
+
+    <div id="device-3" class="card">
+        <h3>Device 3 - All Data</h3>
+        <div class="metrics-compact">
+            <div class="metric-compact-item" data-metric-key="ping_ms">
+                <div>Ping</div>
+                <div id="metric-ping_ms-3">8.5 ms</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="iperf_mbps">
+                <div>Bandwidth</div>
+                <div id="metric-iperf_mbps-3">950.5 Mbps</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="cpu_usage_percent">
+                <div>CPU Usage</div>
+                <div id="metric-cpu_usage_percent-3">25.8%</div>
+            </div>
+            <div class="metric-compact-item" data-metric-key="memory_used_percent">
+                <div>Memory</div>
+                <div id="metric-memory_used_percent-3">78.3%</div>
+            </div>
+        </div>
+        <div class="metrics-toggle-container" id="metrics-toggle-3" style="display: none;">
+            <button class="metrics-toggle-btn" id="metrics-toggle-btn-3">Show hidden metrics</button>
+        </div>
+    </div>
+
+    <script>
+        const SUMMARY_METRICS = [
+            { key: 'ping_ms', label: 'Ping' },
+            { key: 'iperf_mbps', label: 'Bandwidth' },
+            { key: 'cpu_usage_percent', label: 'CPU Usage' },
+            { key: 'memory_used_percent', label: 'Memory' }
+        ];
+
+        let deviceHiddenMetricsVisible = new Map(); // deviceId -> boolean
+        let metricVisibilityState = new Map();
+        const testDevices = [1, 2, 3];
+
+        function updateMetricVisibility(deviceId) {
+            console.log('updateMetricVisibility called for device', deviceId);
+            
+            const metricsContainer = document.querySelector(`#device-${deviceId} .metrics-compact`);
+            const toggleContainer = document.getElementById(`metrics-toggle-${deviceId}`);
+            const toggleBtn = document.getElementById(`metrics-toggle-btn-${deviceId}`);
+            
+            console.log('Elements found:', {
+                metricsContainer: !!metricsContainer,
+                toggleContainer: !!toggleContainer,
+                toggleBtn: !!toggleBtn
+            });
+            
+            if (!metricsContainer || !toggleContainer || !toggleBtn) return;
+            
+            const hiddenMetrics = new Set();
+            const isDeviceHiddenVisible = deviceHiddenMetricsVisible.get(deviceId) || false;
+
+            // Check each metric to see if it only shows "n/a"
+            SUMMARY_METRICS.forEach(def => {
+                const cell = document.getElementById(`metric-${def.key}-${deviceId}`);
+                const metricItem = metricsContainer.querySelector(`[data-metric-key="${def.key}"]`);
+
+                if (cell && metricItem) {
+                    const cellText = cell.textContent.trim();
+                    const isNa = cellText === 'n/a' || cellText === '--';
+
+                    console.log(`Device ${deviceId} - Metric ${def.key}: "${cellText}" -> isNa: ${isNa}`);
+
+                    if (isNa) {
+                        hiddenMetrics.add(def.key);
+                        // Hide/show based on this device's toggle state
+                        if (isDeviceHiddenVisible) {
+                            metricItem.classList.remove('metric-hidden');
+                            console.log(`Showing metric ${def.key} for device ${deviceId}`);
+                        } else {
+                            metricItem.classList.add('metric-hidden');
+                            console.log(`Hiding metric ${def.key} for device ${deviceId}`);
+                        }
+                    } else {
+                        metricItem.classList.remove('metric-hidden');
+                    }
+                }
+            });
+
+            // Store the hidden metrics for this device
+            metricVisibilityState.set(deviceId, hiddenMetrics);
+
+            console.log(`Device ${deviceId} - Hidden metrics:`, Array.from(hiddenMetrics));
+            console.log(`Device ${deviceId} - isDeviceHiddenVisible: ${isDeviceHiddenVisible}`);
+
+            // Show/hide the toggle button
+            if (hiddenMetrics.size > 0) {
+                toggleContainer.style.display = 'block';
+                if (isDeviceHiddenVisible) {
+                    toggleBtn.textContent = 'Hide metrics without data';
+                    console.log(`Showing toggle for device ${deviceId}: hide mode`);
+                } else {
+                    const hiddenCount = hiddenMetrics.size;
+                    toggleBtn.textContent = `Show ${hiddenCount} hidden metric${hiddenCount > 1 ? 's' : ''}`;
+                    console.log(`Showing toggle for device ${deviceId}: ${hiddenCount} hidden metrics`);
+                }
+            } else {
+                toggleContainer.style.display = 'none';
+                console.log(`Hiding toggle for device ${deviceId}`);
+            }
+        }
+
+        function toggleHiddenMetrics(deviceId) {
+            console.log('toggleHiddenMetrics called for device:', deviceId);
+            const currentState = deviceHiddenMetricsVisible.get(deviceId) || false;
+            console.log('Current state:', currentState);
+            deviceHiddenMetricsVisible.set(deviceId, !currentState);
+            console.log('New state:', !currentState);
+
+            // Update only this device
+            updateMetricVisibility(deviceId);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            // Set up event listeners
+            testDevices.forEach(deviceId => {
+                const toggleBtn = document.getElementById(`metrics-toggle-btn-${deviceId}`);
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', () => toggleHiddenMetrics(deviceId));
+                }
+            });
+            
+            // Update visibility for all devices
+            testDevices.forEach(device => {
+                updateMetricVisibility(device);
+            });
+        });
+    </script>
+</body>
+</html>

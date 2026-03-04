@@ -1,0 +1,116 @@
+/* Tab Navigation Extensions - extends existing nav-tab styles */
+
+/* Make nav-tab work as links */
+.nav-tab {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.nav-tab:hover {
+  text-decoration: none;
+}
+
+.nav-tab:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Tab content area */
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 400px;
+}
+
+/* Tab loading states */
+.tab-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-secondary);
+}
+
+.tab-loading .spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-primary);
+  border-top: 2px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Tab error states */
+.tab-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.tab-error-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.tab-error-message {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.tab-error-details {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* Responsive tab navigation */
+@media (max-width: 768px) {
+  .nav-tabs {
+    gap: 0.25rem;
+  }
+  
+  .nav-tab {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Tab accessibility improvements */
+.nav-tab[aria-current="page"] {
+  background: var(--accent-primary);
+  color: var(--text-inverse);
+  border-color: var(--accent-primary);
+}
+
+/* Tab content visibility */
+.tab-content.hidden {
+  display: none !important;
+}
+
+/* Tab indicator for active state */
+.nav-tab.active::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+}
+
+.nav-tab {
+  position: relative;
+}

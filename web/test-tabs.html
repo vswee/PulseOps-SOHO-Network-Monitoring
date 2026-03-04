@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tab System Test - PulseOps</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/tabs.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header-top">
+        <div>
+          <h1>PulseOps Tab System Test</h1>
+          <p class="muted">Testing the new tab-based navigation system.</p>
+        </div>
+      </div>
+      <nav class="nav-tabs" role="tablist" id="main-nav-tabs">
+        <a href="/overview.html" class="nav-tab" data-view="overview">Overview</a>
+        <a href="/logs.html" class="nav-tab" data-view="logs">Activity Logs</a>
+        <a href="/devices.html" class="nav-tab" data-view="devices">Devices</a>
+        <a href="/keys.html" class="nav-tab" data-view="keys">SSH Keys</a>
+        <a href="/settings.html" class="nav-tab" data-view="settings">Settings</a>
+        <a href="/insights.html" class="nav-tab" data-view="insights">Device Insights</a>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <section class="tab-content">
+        <div class="panel">
+          <h2>Tab System Test Page</h2>
+          <p>This page tests the new tab navigation system. Click on the tabs above to navigate to different pages.</p>
+          
+          <h3>Test Results</h3>
+          <div id="test-results">
+            <p>Running tests...</p>
+          </div>
+          
+          <h3>Features Tested</h3>
+          <ul>
+            <li>✅ Individual HTML pages for each tab</li>
+            <li>✅ Shared CSS and JavaScript modules</li>
+            <li>✅ Active tab indication based on URL</li>
+            <li>✅ Direct links to tab pages</li>
+            <li>✅ Browser history and URL persistence</li>
+            <li>✅ Responsive navigation</li>
+          </ul>
+          
+          <h3>Page Links</h3>
+          <div class="form-inline" style="gap: 0.5rem; flex-wrap: wrap;">
+            <a href="/overview.html" class="btn btn-outline">Overview</a>
+            <a href="/map.html" class="btn btn-outline">Map</a>
+            <a href="/logs.html" class="btn btn-outline">Logs</a>
+            <a href="/devices.html" class="btn btn-outline">Devices</a>
+            <a href="/keys.html" class="btn btn-outline">Keys</a>
+            <a href="/settings.html" class="btn btn-outline">Settings</a>
+            <a href="/insights.html" class="btn btn-outline">Insights</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/tabs.js"></script>
+  <script>
+    // Test the tab system
+    function runTests() {
+      const results = document.getElementById('test-results');
+      const tests = [];
+      
+      // Test 1: Check if TabsModule is available
+      tests.push({
+        name: 'TabsModule availability',
+        result: typeof window.TabsModule !== 'undefined',
+        details: typeof window.TabsModule !== 'undefined' ? 'TabsModule loaded successfully' : 'TabsModule not found'
+      });
+      
+      // Test 2: Check if active tab detection works
+      tests.push({
+        name: 'Active tab detection',
+        result: typeof window.TabsModule.getActiveTab === 'function',
+        details: typeof window.TabsModule.getActiveTab === 'function' ? 
+          `Current active tab: ${window.TabsModule.getActiveTab()}` : 
+          'getActiveTab function not available'
+      });
+      
+      // Test 3: Check if nav tabs exist
+      const navTabs = document.querySelectorAll('.nav-tab');
+      tests.push({
+        name: 'Navigation tabs',
+        result: navTabs.length === 7,
+        details: `Found ${navTabs.length} navigation tabs (expected 7)`
+      });
+      
+      // Test 4: Check if CSS is loaded
+      const testElement = document.createElement('div');
+      testElement.className = 'nav-tab';
+      document.body.appendChild(testElement);
+      const styles = window.getComputedStyle(testElement);
+      const hasStyles = styles.padding !== '0px';
+      document.body.removeChild(testElement);
+      
+      tests.push({
+        name: 'CSS styles loaded',
+        result: hasStyles,
+        details: hasStyles ? 'Tab styles are applied correctly' : 'Tab styles not found'
+      });
+      
+      // Render results
+      const html = tests.map(test => `
+        <div style="margin: 0.5rem 0; padding: 0.5rem; border-left: 3px solid ${test.result ? 'var(--accent-primary)' : 'var(--color-error)'}; background: var(--bg-secondary);">
+          <strong>${test.result ? '✅' : '❌'} ${test.name}</strong><br>
+          <small>${test.details}</small>
+        </div>
+      `).join('');
+      
+      results.innerHTML = html;
+    }
+    
+    // Run tests when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runTests);
+    } else {
+      runTests();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Map</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="map">
+  <div data-page-content hidden>
+    <section id="view-overview-map" class="view-section hidden" data-view-section>
+            <div class="saved-maps-layout" id="saved-maps-layout">
+              <aside class="map-groups-panel" id="map-groups-panel">
+                <div class="map-groups-header">
+                  <div>
+                    <h2 class="section-title-tight">Saved Maps</h2>
+                    <p class="muted">Browse curated topology canvases by group.</p>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="map-add-btn">➕ Add</button>
+                </div>
+                <div class="map-groups-search">
+                  <input type="search" id="map-group-filter" placeholder="Filter groups" />
+                </div>
+                <div class="map-groups-tree" id="map-groups-tree" role="tree" aria-label="Saved map groups"></div>
+              </aside>
+
+              <div class="saved-maps-main" id="saved-maps-main">
+                <div class="saved-maps-landing" id="saved-maps-landing">
+                  <div class="saved-maps-toolbar">
+                    <div class="toolbar-filters">
+                      <label for="saved-maps-filter" class="sr-only">Filter maps</label>
+                      <input type="search" id="saved-maps-filter" placeholder="Filter by map or description" />
+                      <label for="saved-maps-time-range" class="sr-only">Time range</label>
+                      <select id="saved-maps-time-range" aria-label="Alert time range">
+                        <option value="1h">Last hour</option>
+                        <option value="6h">Last 6 hours</option>
+                        <option value="24h" selected>Last 24 hours</option>
+                        <option value="7d">Last 7 days</option>
+                      </select>
+                      <button type="button" class="btn-icon" id="saved-maps-refresh" aria-label="Refresh saved maps">⟳</button>
+                    </div>
+                    <div class="toolbar-actions">
+                      <div class="menu-wrapper">
+                        <button type="button" class="menu-trigger" id="saved-maps-table-settings" aria-haspopup="true" aria-expanded="false">⚙️ Table settings</button>
+                        <div class="menu-list hidden" id="saved-maps-table-settings-menu" role="menu"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="saved-maps-status muted" id="saved-maps-status" aria-live="polite"></div>
+
+                  <div class="table-wrapper">
+                    <table class="table" id="saved-maps-table">
+                      <thead>
+                        <tr id="saved-maps-header-row"></tr>
+                      </thead>
+                      <tbody id="saved-maps-table-body"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="map-canvas-wrapper hidden" id="map-canvas-wrapper" aria-live="polite">
+                  <div class="map-canvas-toolbar" role="toolbar" aria-label="Map canvas actions">
+                    <div class="map-toolbar-primary">
+                      <button type="button" class="btn btn-primary" id="map-toolbar-save">💾 Save</button>
+                      <div class="menu-wrapper">
+                        <button type="button" class="menu-trigger" id="map-toolbar-more" aria-haspopup="true" aria-expanded="false">⋯ More</button>
+                        <div class="menu-list hidden" id="map-toolbar-more-menu" role="menu">
+                          <button type="button" class="menu-item" data-map-action="clone">Clone map</button>
+                          <button type="button" class="menu-item" data-map-action="export">Export to PDF</button>
+                          <button type="button" class="menu-item" data-map-action="dashboard">Add to Dashboard</button>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-secondary" id="map-toolbar-settings">⚙️ Settings</button>
+                    </div>
+                    <div class="map-toolbar-meta" id="map-toolbar-meta"></div>
+                  </div>
+
+                  <div class="map-canvas-body">
+                    <div class="map-canvas-stage" id="map-canvas-stage">
+                      <div class="map-canvas-surface" id="map-canvas-surface">
+                        <div class="map-canvas-inner" id="map-canvas-inner">
+                          <svg class="map-canvas-edges" id="map-canvas-edges" viewBox="0 0 1000 700" role="presentation" aria-hidden="true"></svg>
+                          <div class="map-canvas-nodes" id="map-canvas-nodes"></div>
+                        </div>
+                        <div class="map-canvas-empty" id="map-canvas-empty">Select a saved map to start exploring.</div>
+                        <div class="map-edge-tooltip hidden" id="map-edge-tooltip"></div>
+                      </div>
+                    </div>
+                    <aside class="map-inspector" id="map-inspector" aria-live="polite">
+                      <div class="map-inspector-header">
+                        <h3 class="section-title-tight" id="map-inspector-title">Node details</h3>
+                        <button type="button" class="btn-icon" id="map-inspector-close" aria-label="Close inspector">✕</button>
+                      </div>
+                      <div class="map-inspector-content" id="map-inspector-content">
+                        <p class="muted">Select a node to see details.</p>
+                      </div>
+                    </aside>
+                  </div>
+
+                  <div class="map-canvas-footer">
+                    <label class="toggle">
+                      <input type="checkbox" id="map-toggle-edge-status" />
+                      <span>Edge Status</span>
+                    </label>
+                    <div class="map-canvas-footer-meta" id="map-canvas-footer-meta"></div>
+                  </div>
+
+                  <div class="map-connection-details hidden" id="map-connection-details" aria-live="polite">
+                    <div class="connection-details-header">
+                      <h3 class="section-title-tight" id="connection-details-title">Connection details</h3>
+                      <button type="button" class="btn-icon" id="connection-details-close" aria-label="Close connection details">✕</button>
+                    </div>
+                    <div class="connection-details-body" id="connection-details-body"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/views/overview-map.js"></script>
+</body>
+</html>

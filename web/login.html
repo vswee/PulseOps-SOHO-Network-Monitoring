@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps Login</title>
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body class="auth-page" data-page="login">
+  <div class="login-container auth-card">
+    <div class="login-logo">PulseOps</div>
+    <div class="login-subtitle">Sign in to your account</div>
+
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+
+    <form id="login-form" class="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="username" />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
+      </div>
+      
+      <button type="submit" class="login-button" id="login-button">
+        Sign In
+      </button>
+    </form>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <span>Signing you in...</span>
+    </div>
+  </div>
+  <script src="/js/login.js"></script>
+</body>
+</html>

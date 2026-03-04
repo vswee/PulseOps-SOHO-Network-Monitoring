@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Overview</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="overview">
+  <div data-page-content hidden>
+    <section id="view-overview" class="view-section" data-view-section>
+            <div class="device-filters panel">
+              <div class="device-filters-row">
+                <div class="settings-field">
+                  <label for="device-type-filter">Device Type</label>
+                  <select id="device-type-filter">
+                    <option value="">All types</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="device-status-filter">Status</label>
+                  <select id="device-status-filter">
+                    <option value="">All devices</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                    <option value="unreachable">Unreachable</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="device-search-filter">Search</label>
+                  <input type="text" id="device-search-filter" placeholder="Device name or host" />
+                </div>
+                <div class="settings-field">
+                  <label>&nbsp;</label>
+                  <button type="button" class="btn btn-secondary" id="device-filters-reset">Reset</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="overview-empty" class="empty-state hidden">No devices yet. Add one to start monitoring.</div>
+            <div id="devices" class="grid"></div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/device-status.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/device-interactions.js"></script>
+  <script src="/js/dashboard/views/overview-formatters.js"></script>
+  <script src="/js/dashboard/views/overview.js"></script>
+</body>
+</html>

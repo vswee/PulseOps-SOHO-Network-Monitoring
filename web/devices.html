@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseOps — Devices</title>
+  <link rel="stylesheet" href="/css/themes.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body data-page="dashboard" data-route="devices">
+  <div data-page-content hidden>
+    <section id="view-devices" class="view-section hidden" data-view-section>
+            <div class="device-toolbar">
+              <p class="muted">Export device definitions as JSON snapshots for backup or restore.</p>
+              <div class="device-toolbar-buttons">
+                <button type="button" class="btn btn-outline" id="device-select-all">Select all</button>
+                <button type="button" class="btn btn-secondary" id="device-export-selected" disabled>Export
+                  selected</button>
+                <button type="button" class="btn btn-primary" id="device-export-all">Export all</button>
+                <button type="button" class="btn btn-outline" id="device-import-btn">Import JSON</button>
+                <input type="file" id="device-import-input" accept="application/json,.json" class="sr-only" />
+              </div>
+            </div>
+            <div class="panel">
+              <table class="device-table" aria-describedby="device-table-caption">
+                <caption id="device-table-caption" class="sr-only">List of devices</caption>
+                <thead>
+                  <tr>
+                    <th class="table-checkbox-column"><input type="checkbox" id="device-table-master"
+                        aria-label="Select all devices" /></th>
+                    <th>Name</th>
+                    <th>Host</th>
+                    <th>Location</th>
+                    <th>Kind</th>
+                    <th>Platform</th>
+                    <th>Link</th>
+                    <th>Status</th>
+                    <th>User</th>
+                    <th class="table-actions-column">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="device-table-body">
+                  <tr>
+                    <td colspan="10" class="muted">Loading devices...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+  </div>
+  <script src="/js/dashboard/shared.js"></script>
+  <script src="/js/dashboard/device-status.js"></script>
+  <script src="/js/dashboard/main.js"></script>
+  <script src="/js/dashboard/device-interactions.js"></script>
+  <script src="/js/dashboard/views/devices.js"></script>
+</body>
+</html>

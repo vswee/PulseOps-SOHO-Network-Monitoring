@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Debug - Available Devices</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+        <h1>Available Devices Debug</h1>
+        <div id="loading">Loading devices...</div>
+        <div id="devices-list" style="display: none;">
+            <h2>Devices Found:</h2>
+            <div id="devices-container"></div>
+        </div>
+        <div id="error" style="display: none; color: red;">
+            <h2>Error Loading Devices</h2>
+            <pre id="error-details"></pre>
+        </div>
+    </div>
+
+    <script src="/js/mock-data.js"></script>
+    <script src="/js/shared/auth.js"></script>
+    <script src="/js/shared/utils.js"></script>
+    <script type="module" src="/js/dashboard/shared.js"></script>
+    <script type="module">
+        import shared from '/js/dashboard/shared.js';
+        
+        async function loadDevices() {
+            try {
+                console.log('Loading devices...');
+                await shared.stores.devices.load();
+                const devices = shared.stores.devices.get();
+                
+                console.log('Devices loaded:', devices);
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (devices && devices.length > 0) {
+                    document.getElementById('devices-list').style.display = 'block';
+                    
+                    const container = document.getElementById('devices-container');
+                    container.innerHTML = devices.map(device => `
+                        <div style="border: 1px solid #ccc; padding: 1rem; margin: 0.5rem 0; border-radius: 4px;">
+                            <h3>${device.name || 'Unnamed Device'}</h3>
+                            <p><strong>ID:</strong> ${device.id}</p>
+                            <p><strong>Host:</strong> ${device.host || 'N/A'}</p>
+                            <p><strong>Platform:</strong> ${device.platform || 'N/A'}</p>
+                            <p><strong>Status:</strong> ${device.status || 'Unknown'}</p>
+                            <p><strong>Kind:</strong> ${device.kind || 'N/A'}</p>
+                            <p><a href="/insights.html?device=${device.id}">View Insights</a></p>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error-details').textContent = 'No devices found';
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error-details').textContent = error.toString();
+            }
+        }
+        
+        // Load devices when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadDevices);
+        } else {
+            loadDevices();
+        }
+    </script>
+</body>
+</html>

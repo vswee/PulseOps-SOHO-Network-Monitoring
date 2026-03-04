@@ -1,0 +1,30 @@
+name: pulseops
+base: core22
+version: '0.2'
+summary: Network telemetry and task runner
+description: |
+  PulseOps monitors devices (routers, APs, printers, servers) and can perform tasks like reboot.
+  Includes ping and iperf3 collectors, and SSH/Huawei actions.
+
+grade: devel
+confinement: classic
+
+apps:
+  pulseops:
+    command: bin/pulseops
+    plugs: [network, network-bind]
+
+parts:
+  pulseops:
+    plugin: go
+    source: .
+    go-channel: 1.22/stable
+    build-packages: [gcc]
+    stage-packages:
+      - iputils-ping
+      - iperf3
+      - openssh-client
+      - snmp
+      - ca-certificates
+    organize:
+      cmd/pulseops/pulseops: bin/pulseops
