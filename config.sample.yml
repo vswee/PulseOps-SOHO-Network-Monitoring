@@ -1,3 +1,4 @@
+# Copy this file to config.yml and edit for your environment.
 iperf:
   server: 127.0.0.1
   seconds: 5

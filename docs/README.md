@@ -1,0 +1,14 @@
+# PulseOps Documentation
+
+Start here:
+- docs/GETTING_STARTED.md
+- docs/CONFIGURATION.md
+- docs/TROUBLESHOOTING.md
+
+Additional references:
+- DEBUG_MODE.md
+- KEY_MANAGER_IMPLEMENTATION.md
+- METRIC_HIDING_IMPLEMENTATION.md
+- web/TAB_SYSTEM_README.md
+- PATCH_NOTES.md
+- CHANGES_SUMMARY.md

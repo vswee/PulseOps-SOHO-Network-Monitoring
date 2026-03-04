@@ -9,9 +9,9 @@ services:
     cap_add:
       - NET_RAW
     environment:
-      - PULSEOPS_KEY_SECRET=b_gTQmYaFDAWZZOOf1zgEeZvh_ssceStTL_cfARdzJydATj8sR97b-ENT3DQ20gh
+      - PULSEOPS_KEY_SECRET=${PULSEOPS_KEY_SECRET}
     volumes:
-      - ./config.sample.yml:/etc/pulseops/config.yml:ro
+      - ./config.yml:/etc/pulseops/config.yml:ro
       - pulseops-data:/var/lib/pulseops
   iperf3:
     image: networkstatic/iperf3:latest

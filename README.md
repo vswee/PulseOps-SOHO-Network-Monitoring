@@ -1,23 +1,47 @@
 # PulseOps
-Network telemetry and task runner with web UI.
+Network telemetry and task runner with a web UI for small/office networks.
 
-## Docker
+## Quick start (Docker)
 ```bash
+cp config.sample.yml config.yml
+cp .env.example .env
+# edit .env and set PULSEOPS_KEY_SECRET to a strong, stable secret
+
 docker compose up --build -d
 # visit http://localhost:8765
 ```
 
-## Native
+First-time setup happens in the browser at `http://localhost:8765/setup`, where you create the admin account.
+
+Optional Prometheus/Grafana stack:
 ```bash
-cd cmd/pulseops && go build -o pulseops && ./pulseops -config ../../config.sample.yml
+docker compose -f docker-compose.yml -f docker-compose.override.yml up --build -d
 ```
 
-## Snap
+## Native
+Requirements: Go 1.24+.
+
 ```bash
-snapcraft
-sudo snap install pulseops_0.2_*.snap --dangerous --classic
-pulseops
+cp config.sample.yml config.yml
+export PULSEOPS_KEY_SECRET=your-strong-secret
+
+go build -o pulseops ./cmd/pulseops
+./pulseops -config config.yml -data data -addr :8765
 ```
+
+## Defaults
+- Web UI + API: `http://localhost:8765`
+- Config path: `config.yml` (Docker uses `/etc/pulseops/config.yml`)
+- Data directory: `data/` (Docker uses `/var/lib/pulseops`)
+
+## Documentation
+- docs/GETTING_STARTED.md
+- docs/CONFIGURATION.md
+- docs/TROUBLESHOOTING.md
+- DEBUG_MODE.md
+- KEY_MANAGER_IMPLEMENTATION.md
+- METRIC_HIDING_IMPLEMENTATION.md
+- web/TAB_SYSTEM_README.md
 
 ## API
 - GET  /api/devices
@@ -48,8 +72,7 @@ PulseOps can poll SNMP-capable devices to capture uptime, CPU, memory usage, and
        "snmp_enabled": true,
        "snmp_host": "192.168.1.2",
        "snmp_community": "monitoring",
-       "snmp_interval": "5m",
-       "snmp_timeout": "3s"
+       "snmp_interval": "5m"
      }
    }
    ```
